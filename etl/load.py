@@ -124,6 +124,9 @@ def load_all(conn, run_id, raw_rows, records, buildings, zones):
                 where extensions.ST_Contains(z.geom, extensions.ST_PointOnSurface(b.geom))
                 order by z.zone_id limit 1
             ) pz on true""", {"min": config.MIN_OVERLAP_RATIO})
+
+        # --- ANALYTICS: ricalcola benchmark e metriche di zona
+        cur.execute("select analytics.refresh_all()")
     return loaded
 
 

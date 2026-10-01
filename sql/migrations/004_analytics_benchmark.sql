@@ -13,9 +13,6 @@
 create or replace function analytics.min_peers() returns int
 language sql immutable as $$ select 10 $$;
 
-drop materialized view if exists analytics.zone_metrics;
-drop materialized view if exists analytics.building_benchmark;
-
 create materialized view analytics.building_benchmark as
 with base as (
     select e.egid, e.year, e.idc, e.sre,
@@ -76,7 +73,8 @@ select r.egid, r.year, r.idc, r.idc_avg_3y, r.sre, r.final_energy_mwh, r.energy_
 from ranked r
 join peer p             on p.family = r.family and p.year = r.year
 left join zone z        on z.zone_id = r.zone_id and z.year = r.year
-left join core.energy_idc t3 on t3.egid = r.egid and t3.year = r.year - 3;
+left join core.energy_idc t3 on t3.egid = r.egid and t3.year = r.year - 3
+with no data;
 
 create unique index building_benchmark_pk  on analytics.building_benchmark (egid, year);
 create index building_benchmark_latest_idx on analytics.building_benchmark (is_latest) where is_latest;
@@ -97,15 +95,22 @@ select bb.zone_id, z.zone_type, z.zone_name, z.slug, bb.year,
        (count(*) >= analytics.min_peers())                             as zone_benchmark_valid
 from analytics.building_benchmark bb
 join core.industrial_zones z using (zone_id)
-group by bb.zone_id, z.zone_type, z.zone_name, z.slug, bb.year;
+group by bb.zone_id, z.zone_type, z.zone_name, z.slug, bb.year
+with no data;
 
 create unique index zone_metrics_pk on analytics.zone_metrics (zone_id, year);
 
--- Aggiornamento dopo ogni ETL
+-- Aggiornamento dopo ogni ETL (la prima volta senza CONCURRENTLY, perché le viste sono vuote)
 create or replace function analytics.refresh_all() returns void
-language sql security definer set search_path = '' as $$
-    refresh materialized view concurrently analytics.building_benchmark;
-    refresh materialized view concurrently analytics.zone_metrics;
-$$;
+language plpgsql security definer set search_path = '' as $$
+begin
+    if (select ispopulated from pg_matviews where schemaname = 'analytics' and matviewname = 'building_benchmark') then
+        refresh materialized view concurrently analytics.building_benchmark;
+        refresh materialized view concurrently analytics.zone_metrics;
+    else
+        refresh materialized view analytics.building_benchmark;
+        refresh materialized view analytics.zone_metrics;
+    end if;
+end $$;
 
-revoke all on function analytics.refresh_all() from public, anon, authenticated;
+revoke execute on function analytics.refresh_all() from public;
