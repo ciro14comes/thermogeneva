@@ -5,18 +5,30 @@ import { Link } from "@/i18n/navigation";
 import HistoryChart from "@/components/HistoryChart";
 import { getBuilding, getBuildingHistory, getZones, zoneLabel } from "@/lib/data";
 import { fmtNum, fmtOrdinal, fmtPct, trendColor } from "@/lib/format";
+import { pageMeta } from "@/lib/seo";
 
 export const revalidate = 3600;
 
 type Params = { params: Promise<{ locale: string; egid: string }> };
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
-  const { egid } = await params;
+  const { locale, egid } = await params;
   const b = Number.isFinite(Number(egid)) ? await getBuilding(Number(egid)) : null;
-  return {
-    title: b?.address ?? `EGID ${egid}`,
-    robots: { index: false, follow: true }, // pagine edificio: noindex all'inizio (runbook)
-  };
+  if (!b) return { robots: { index: false, follow: true } };
+  const t = await getTranslations({ locale, namespace: "seo" });
+  const tf = await getTranslations({ locale, namespace: "families" });
+  const address = b.address ?? `EGID ${b.egid}`;
+  // pagine edificio: noindex all'inizio (runbook) — restano raggiungibili e seguono i link
+  return pageMeta({
+    locale,
+    path: `/buildings/${b.egid}`,
+    title: t("buildingTitle", { address }),
+    description: t("buildingDescription", {
+      address, commune: b.commune ?? "Genève", idc: b.idc, year: b.year,
+      median: b.peer_median ?? "—", percentile: b.peer_percentile ?? "—", family: tf(b.family).toLowerCase(),
+    }),
+    noindex: true,
+  });
 }
 
 export default async function BuildingPage({ params }: Params) {

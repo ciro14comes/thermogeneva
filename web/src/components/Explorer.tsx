@@ -421,7 +421,7 @@ export default function Explorer() {
         {!selected ? (
           <>
             <header className="panel-head">
-              <div className="panel-crumb">{t("crumbRoot")}</div>
+              <h1 className="panel-crumb" style={{ fontWeight: 400, margin: "0 0 2px", letterSpacing: 0 }}>{t("h1")}</h1>
               <div className="panel-title">
                 Genève <IconChevron size={16} /> {zoneSel ? zoneLabel(zoneSel) : t("allZones")}
               </div>

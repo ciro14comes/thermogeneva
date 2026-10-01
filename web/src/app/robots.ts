@@ -1,10 +1,17 @@
 import type { MetadataRoute } from "next";
+import { SITE_URL } from "@/lib/seo";
 
-const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://thermogeneva.ch";
-
+// Motori di ricerca e assistenti AI sono i benvenuti (dati pubblici): solo le API interne sono escluse,
+// tranne l'immagine di anteprima usata dai social.
 export default function robots(): MetadataRoute.Robots {
+  const rule = { allow: ["/", "/api/og"], disallow: ["/api/"] };
   return {
-    rules: { userAgent: "*", allow: "/", disallow: ["/api/"] },
-    sitemap: `${SITE}/sitemap.xml`,
+    rules: [
+      { userAgent: "*", ...rule },
+      { userAgent: ["GPTBot", "OAI-SearchBot", "ChatGPT-User", "ClaudeBot", "Claude-User", "Claude-SearchBot",
+          "PerplexityBot", "Google-Extended", "Applebot-Extended", "CCBot"], ...rule },
+    ],
+    sitemap: `${SITE_URL}/sitemap.xml`,
+    host: SITE_URL,
   };
 }

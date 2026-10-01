@@ -3,19 +3,22 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { getZoneMetrics, getZones, referenceYear, zoneLabel } from "@/lib/data";
 import { fmtNum } from "@/lib/format";
+import JsonLd from "@/components/JsonLd";
+import { absolute, breadcrumbLd, pageMeta } from "@/lib/seo";
 
 export const revalidate = 3600;
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "zones" });
-  return { title: t("title"), alternates: { canonical: `/${locale}/zones`, languages: { en: "/en/zones", fr: "/fr/zones" } } };
+  const t = await getTranslations({ locale, namespace: "seo" });
+  return pageMeta({ locale, path: "/zones", title: t("zonesTitle"), description: t("zonesDescription") });
 }
 
 export default async function ZonesPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations("zones");
+  const tn = await getTranslations("nav");
 
   const [zones, metrics] = await Promise.all([getZones(), getZoneMetrics()]);
   const year = referenceYear(metrics);
@@ -26,6 +29,17 @@ export default async function ZonesPage({ params }: { params: Promise<{ locale: 
 
   return (
     <div className="container page">
+      <JsonLd data={[
+        breadcrumbLd([{ name: tn("home"), path: `/${locale}` }, { name: tn("zones"), path: `/${locale}/zones` }]),
+        {
+          "@context": "https://schema.org",
+          "@type": "ItemList",
+          name: t("title"),
+          itemListElement: rows.map(({ z }, i) => ({
+            "@type": "ListItem", position: i + 1, name: zoneLabel(z), url: absolute(`/${locale}/zones/${z.slug}`),
+          })),
+        },
+      ]} />
       <h1>{t("title")}</h1>
       <p className="lead">{t("lead", { year: year ?? "—" })}</p>
       <p className="small muted">{t("unnamedNote")}</p>

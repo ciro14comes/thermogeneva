@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import JsonLd from "@/components/JsonLd";
+import { breadcrumbLd, datasetLd, pageMeta } from "@/lib/seo";
 import { getLastRefresh } from "@/lib/data";
 import { fmtDate } from "@/lib/format";
 
@@ -9,19 +11,31 @@ export const revalidate = 3600;
 
 export async function generateMetadata({ params }: P): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "pages" });
-  return { title: t("dataTitle"), alternates: { canonical: `/${locale}/data`, languages: { en: "/en/data", fr: "/fr/data" } } };
+  const t = await getTranslations({ locale, namespace: "seo" });
+  return pageMeta({ locale, path: "/data", title: t("dataTitle"), description: t("dataDescription") });
 }
 
 export default async function DataPage({ params }: P) {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations("pages");
-  const last = fmtDate(await getLastRefresh(), locale);
+  const lastIso = await getLastRefresh();
+  const last = fmtDate(lastIso, locale);
   const fr = locale === "fr";
+  const ts = await getTranslations("seo");
+  const tn = await getTranslations("nav");
 
   return (
     <div className="container page">
+      <JsonLd data={[
+        breadcrumbLd([{ name: tn("home"), path: `/${locale}` }, { name: tn("data"), path: `/${locale}/data` }]),
+        datasetLd({
+          locale,
+          name: fr ? "ThermoGeneva — benchmark de l'IDC des bâtiments des zones industrielles de Genève" : "ThermoGeneva — IDC benchmark of buildings in Geneva's industrial zones",
+          description: ts("dataDescription"),
+          dateModified: lastIso,
+        }),
+      ]} />
       <div className="prose">
         <h1>{t("dataTitle")}</h1>
         <p>{fr ? `Dernière mise à jour réussie : ${last}.` : `Last successful update: ${last}.`}</p>

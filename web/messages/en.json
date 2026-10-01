@@ -1,7 +1,7 @@
 {
   "meta": {
-    "title": "ThermoGeneva — Industrial building thermal benchmark",
-    "description": "Compare the thermal performance (IDC) of buildings in Geneva's industrial zones against similar buildings, using official open data."
+    "title": "ThermoGeneva — Heat consumption benchmark for Geneva industrial buildings (IDC)",
+    "description": "Compare the heat consumption index (IDC) of buildings in Geneva's industrial zones with similar buildings across the canton. Official open data, peer percentiles, 3-year trends and legal thresholds."
   },
   "nav": {
     "explore": "Explore",
@@ -15,7 +15,8 @@
     "sectionInfo": "About the data",
     "collapse": "Collapse menu",
     "expand": "Expand menu",
-    "updated": "Data updated"
+    "updated": "Data updated",
+    "home": "Home"
   },
   "footer": {
     "source": "Source: SITG / OCEN — IDC and FTI industrial zones, open data (class A). Base map © swisstopo. Values transformed by ThermoGeneva (see Methodology).",
@@ -23,22 +24,28 @@
     "disclaimer": "Indicative screening tool. Not an energy audit and not an official decision."
   },
   "home": {
-    "kicker": "Geneva · industrial zones",
-    "title": "How does this building's heating compare to similar buildings?",
-    "lead": "ThermoGeneva turns the official Geneva heat index (IDC) into comparisons: each building in the FTI industrial zones is benchmarked against buildings of the same type across the canton, with its trend and its position relative to legal thresholds.",
+    "kicker": "Geneva · FTI industrial zones · open data",
+    "title": "Heat consumption benchmark for Geneva's industrial buildings",
+    "lead": "ThermoGeneva compares the official heat consumption index (IDC) of every building in Geneva's industrial zones with buildings of the same type across the canton. In one view you see whether a building's heating and hot-water consumption is lower, typical or higher than its peers, how it has changed over three years and how it relates to Geneva's legal thresholds.",
     "cta": "Open the map",
     "ctaZones": "Browse zones",
     "statBuildings": "buildings in industrial zones",
     "statZones": "industrial zones with data",
     "statAbove450": "above 450 MJ/m² (3-year average)",
     "statYear": "reference year",
-    "questionsTitle": "Questions it answers",
-    "q1": "What is the building's IDC?",
-    "q2": "Is it high or low compared with similar buildings?",
-    "q3": "Is it improving or getting worse?",
-    "q4": "Is it close to Geneva's legal thresholds?",
+    "questionsTitle": "What ThermoGeneva answers",
+    "q1": "What is the IDC of this building?",
+    "q2": "Is it lower or higher than similar buildings in Geneva?",
+    "q3": "Is its heat consumption improving or getting worse?",
+    "q4": "How close is it to Geneva's legal IDC thresholds?",
     "notTitle": "What it is not",
-    "notText": "ThermoGeneva does not measure process energy or total factory consumption, and does not replace an energy audit. It is a screening layer that shows where a closer technical look may be worthwhile."
+    "notText": "ThermoGeneva does not measure process energy or a factory's total consumption, and it does not replace an energy audit. It is a screening layer built on public data that shows where a closer technical look may be worthwhile.",
+    "summary": "Based on each building's latest declaration, the {n} buildings with an IDC in Geneva's industrial zones have a median of {median} MJ/m² per year. {above} of them have a 3-year average above 450 MJ/m², the level from which Geneva's energy regulation requires improvement measures.",
+    "faqTitle": "Frequently asked questions",
+    "howTitle": "How it works",
+    "how1": "Official IDC declarations are downloaded from the SITG open-data portal.",
+    "how2": "Each building is placed in its FTI industrial zone and grouped with buildings of the same type across the canton.",
+    "how3": "The site calculates the peer median, percentile, 3-year trend and estimated energy for every building."
   },
   "explore": {
     "title": "Explore",
@@ -75,7 +82,9 @@
     "viewMap": "Map",
     "viewList": "List",
     "backAll": "All buildings",
-    "address": "Address"
+    "address": "Address",
+    "h1": "Map of building heat consumption (IDC) in Geneva's industrial zones",
+    "srIntro": "Interactive map of buildings in Geneva's FTI industrial zones. Each building is coloured by its heat consumption index (IDC) compared with similar buildings across the canton: lower, typical or higher than the peer median."
   },
   "building": {
     "egid": "EGID",
@@ -123,8 +132,8 @@
     "notFound": "This building is not part of the industrial-zone dataset."
   },
   "zones": {
-    "title": "Industrial zones",
-    "lead": "Industrial zones managed by the FTI foundation, with the buildings that report an IDC. Reference year: {year}.",
+    "title": "Geneva industrial zones: heat consumption (IDC) by zone",
+    "lead": "Heat consumption of the buildings in the industrial zones managed by the FTI foundation in Geneva. For each zone: number of buildings with an IDC, median IDC, buildings above the 450 MJ/m² threshold and estimated final energy. Reference year: {year}.",
     "zone": "Zone",
     "type": "Type",
     "buildings": "Buildings",
@@ -138,7 +147,9 @@
     "percentileShort": "Percentile",
     "trendTitle": "Median IDC over time",
     "noData": "No building with IDC data in this zone.",
-    "unnamedNote": "The official FTI layer does not publish zone names; zones are labelled by main municipality and zone type."
+    "unnamedNote": "The official FTI layer does not publish zone names; zones are labelled by main municipality and zone type.",
+    "h1Zone": "{zone} industrial zone: building heat consumption (IDC)",
+    "zoneSummary": "In {year}, the {n} buildings with an IDC in the {zone} industrial zone ({type}, {commune}) had a median IDC of {median} MJ/m² per year (25th–75th percentile: {p25}–{p75}). {above} of them have a 3-year average above 450 MJ/m², and {share} % have a higher IDC than the median of similar buildings in the canton."
   },
   "families": {
     "industria": "Industrial",
@@ -155,8 +166,41 @@
     "altro": "Other"
   },
   "pages": {
-    "methodologyTitle": "Methodology",
-    "dataTitle": "Data sources & updates",
+    "methodologyTitle": "Methodology: how the IDC benchmark is calculated",
+    "dataTitle": "Data sources and updates",
     "privacyTitle": "Privacy notice"
+  },
+  "seo": {
+    "homeTitle": "ThermoGeneva — Geneva industrial building heat benchmark (IDC)",
+    "homeDescription": "Free benchmark of the heat consumption index (IDC) of buildings in Geneva's FTI industrial zones: compare each building with similar buildings, see its 3-year trend and its position against Geneva's 450 MJ/m² threshold.",
+    "exploreTitle": "Interactive map of IDC in Geneva industrial zones",
+    "exploreDescription": "Explore an interactive map of Geneva's industrial zones (ZIMEYSA, ZIPLO, La Praille-Acacias…) and see each building's heat consumption index (IDC) compared with similar buildings across the canton.",
+    "zonesTitle": "Geneva industrial zones: heat consumption (IDC) by zone",
+    "zonesDescription": "Median heat consumption index (IDC), number of buildings above 450 MJ/m² and estimated final energy for each FTI industrial zone in the canton of Geneva, based on official open data.",
+    "zoneTitle": "{zone} industrial zone: building heat consumption (IDC)",
+    "zoneDescription": "Heat consumption benchmark for the {zone} industrial zone in Geneva ({type}): {n} buildings, median IDC {median} MJ/m²·yr in {year}, {above} buildings above 450 MJ/m² (3-year average).",
+    "buildingTitle": "{address} — IDC heat benchmark",
+    "buildingDescription": "{address} ({commune}): IDC {idc} MJ/m²·yr in {year}, peer median {median}, {percentile}th percentile among similar {family} buildings in Geneva.",
+    "methodologyTitle": "Methodology: how the IDC benchmark is calculated",
+    "methodologyDescription": "How ThermoGeneva calculates the IDC peer benchmark for Geneva buildings: definition of the IDC, peer groups, percentiles, 3-year trend, estimated energy, legal thresholds (450 / 650 / 550 MJ/m²) and limitations.",
+    "dataTitle": "Data sources: SITG open data on building IDC",
+    "dataDescription": "ThermoGeneva uses official open data from SITG (OCEN heat consumption index, FTI industrial zones) and swisstopo boundaries. Sources, licence, transformations and update frequency.",
+    "privacyTitle": "Privacy notice",
+    "privacyDescription": "ThermoGeneva has no user accounts, no forms and no tracking cookies. What visitor data is processed by the hosting provider and the map service.",
+    "keywords": "IDC Geneva, indice de dépense de chaleur, heat consumption index, Geneva industrial zones, FTI, ZIMEYSA, ZIPLO, building energy benchmark, OCEN, SITG open data, energy renovation Geneva"
+  },
+  "faq": {
+    "q1": "What is the IDC (indice de dépense de chaleur) in Geneva?",
+    "a1": "The IDC is the official Geneva indicator of a building's heat consumption. It is the final energy used for space heating and domestic hot water, divided by the heated floor area (SRE) and corrected for the severity of each winter. It is expressed in MJ/m² per year (3.6 MJ = 1 kWh) and declared every year by building owners, one value per building (EGID).",
+    "q2": "What IDC value is considered high in Geneva?",
+    "a2": "Geneva's energy regulation uses the average IDC of the last three years. Above 450 MJ/m² per year, owners must take measures to reduce consumption. Above the 'significant' threshold, an energy renovation is mandatory: 800 MJ/m² until the end of 2026, 650 MJ/m² from 2027 and 550 MJ/m² from 2031.",
+    "q3": "How does ThermoGeneva compare buildings?",
+    "a3": "Each building is compared with all buildings of the same type (for example industrial, logistics or offices) in the canton of Geneva for the same year. The site shows the peer median, the difference in percent and the percentile. When a peer group has fewer than 10 buildings, no benchmark is shown.",
+    "q4": "Which buildings are included?",
+    "a4": "ThermoGeneva shows buildings located in the industrial zones managed by the Fondation pour les terrains industriels de Genève (FTI) that declare an IDC. Benchmarks are calculated against all buildings of the same type in the canton.",
+    "q5": "Where does the data come from and how often is it updated?",
+    "a5": "All data is official open data: the IDC dataset of the cantonal energy office (OCEN) and the FTI industrial-zone perimeters published by SITG, plus canton boundaries from swisstopo. The data is refreshed from the official sources, and the date of the last update is shown on every page.",
+    "q6": "Is ThermoGeneva an energy audit or an official decision?",
+    "a6": "No. ThermoGeneva is an independent, indicative screening tool. A high value is a reason to look closer, not a verdict. Only the cantonal energy office (OCEN) determines legal obligations, and only an energy audit can assess a specific building."
   }
 }

@@ -4,6 +4,8 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { getBuildingsInZone, getZone, getZoneMetrics, referenceYear, zoneLabel } from "@/lib/data";
 import { fmtNum, fmtOrdinal, fmtPct, percentileColor, trendColor } from "@/lib/format";
+import JsonLd from "@/components/JsonLd";
+import { breadcrumbLd, pageMeta } from "@/lib/seo";
 
 export const revalidate = 3600;
 
@@ -13,11 +15,20 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { locale, slug } = await params;
   const z = await getZone(slug);
   if (!z) return {};
+  const t = await getTranslations({ locale, namespace: "seo" });
+  const [metrics, all] = await Promise.all([getZoneMetrics(z.zone_id), getZoneMetrics()]);
+  const year = referenceYear(all);
+  const m = metrics.find((x) => x.year === year) ?? metrics[metrics.length - 1];
   const label = zoneLabel(z);
-  return {
-    title: locale === "fr" ? `Benchmark énergétique industriel ${label}` : `${label} industrial energy benchmark`,
-    alternates: { canonical: `/${locale}/zones/${slug}`, languages: { en: `/en/zones/${slug}`, fr: `/fr/zones/${slug}` } },
-  };
+  return pageMeta({
+    locale,
+    path: `/zones/${slug}`,
+    title: t("zoneTitle", { zone: label }),
+    description: m
+      ? t("zoneDescription", { zone: label, type: z.zone_type, n: m.buildings, median: m.median_idc ?? "—", year: m.year, above: m.buildings_above_450 })
+      : t("zonesDescription"),
+    noindex: !m || m.buildings === 0,
+  });
 }
 
 export default async function ZonePage({ params }: Params) {
@@ -26,6 +37,7 @@ export default async function ZonePage({ params }: Params) {
   const t = await getTranslations("zones");
   const tb = await getTranslations("building");
   const tf = await getTranslations("families");
+  const tn = await getTranslations("nav");
 
   const zone = await getZone(slug);
   if (!zone) notFound();
@@ -45,7 +57,31 @@ export default async function ZonePage({ params }: Params) {
     <div className="container page">
       <p className="small"><Link href="/zones">← {t("title")}</Link></p>
       <div className="kicker">{zone.zone_type} · {zone.commune}</div>
-      <h1>{zoneLabel(zone)}</h1>
+      <JsonLd data={[
+        breadcrumbLd([
+          { name: tn("home"), path: `/${locale}` },
+          { name: tn("zones"), path: `/${locale}/zones` },
+          { name: zoneLabel(zone), path: `/${locale}/zones/${zone.slug}` },
+        ]),
+        {
+          "@context": "https://schema.org",
+          "@type": "Place",
+          name: zoneLabel(zone),
+          description: t("h1Zone", { zone: zoneLabel(zone) }),
+          address: { "@type": "PostalAddress", addressLocality: zone.commune ?? "Genève", addressRegion: "GE", addressCountry: "CH" },
+          containedInPlace: { "@type": "AdministrativeArea", name: "Canton of Geneva" },
+        },
+      ]} />
+      <h1>{t("h1Zone", { zone: zoneLabel(zone) })}</h1>
+      {current && (
+        <p className="lead" style={{ fontSize: "1rem" }}>
+          {t("zoneSummary", {
+            year: current.year, n: current.buildings, zone: zoneLabel(zone), type: zone.zone_type, commune: zone.commune ?? "Genève",
+            median: fmtNum(current.median_idc, locale), p25: fmtNum(current.p25_idc, locale), p75: fmtNum(current.p75_idc, locale),
+            above: current.buildings_above_450, share: fmtNum(current.share_above_peer_median_pct, locale),
+          })}
+        </p>
+      )}
       {current && !current.zone_benchmark_valid && <p className="note">{t("smallZone")}</p>}
 
       {current ? (

@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import JsonLd from "@/components/JsonLd";
+import { breadcrumbLd, pageMeta } from "@/lib/seo";
 
 type P = { params: Promise<{ locale: string }> };
 
@@ -7,8 +9,8 @@ const CONTACT = process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "ciro14comes@gmail.com"
 
 export async function generateMetadata({ params }: P): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "pages" });
-  return { title: t("privacyTitle"), alternates: { canonical: `/${locale}/privacy`, languages: { en: "/en/privacy", fr: "/fr/privacy" } } };
+  const t = await getTranslations({ locale, namespace: "seo" });
+  return pageMeta({ locale, path: "/privacy", title: t("privacyTitle"), description: t("privacyDescription") });
 }
 
 export default async function PrivacyPage({ params }: P) {
@@ -16,9 +18,11 @@ export default async function PrivacyPage({ params }: P) {
   setRequestLocale(locale);
   const t = await getTranslations("pages");
   const fr = locale === "fr";
+  const tn = await getTranslations("nav");
 
   return (
     <div className="container page">
+      <JsonLd data={breadcrumbLd([{ name: tn("home"), path: `/${locale}` }, { name: tn("privacy"), path: `/${locale}/privacy` }])} />
       <div className="prose">
         <h1>{t("privacyTitle")}</h1>
 

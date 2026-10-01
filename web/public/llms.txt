@@ -1,0 +1,26 @@
+# ThermoGeneva
+
+> ThermoGeneva is an independent, free web tool that benchmarks the heat consumption of buildings in the industrial zones of the canton of Geneva (Switzerland), using official open data. Available in English and French.
+
+ThermoGeneva compares each building's official heat consumption index (IDC, "indice de dépense de chaleur") with buildings of the same type across the canton of Geneva for the same year. The IDC is the final energy used for space heating and domestic hot water, divided by the heated floor area (SRE), corrected for winter severity, in MJ/m² per year (3.6 MJ = 1 kWh). It is declared yearly by owners, one value per building (EGID).
+
+Key facts:
+- Scope: buildings located in the industrial zones managed by the Fondation pour les terrains industriels de Genève (FTI) that declare an IDC.
+- Benchmark: peer group = same building type (industrial, logistics, offices, …) in the whole canton, same year; minimum 10 buildings. Outputs: peer median, difference in %, percentile, 3-year trend, estimated final energy (IDC × SRE / 3600, MWh/year).
+- Classes: Lower (≤ 25th percentile), Typical (25th–75th), Higher (> 75th), No benchmark (< 10 peers).
+- Geneva legal thresholds (3-year average IDC): above 450 MJ/m²/year improvement measures are required; above the "significant" threshold energy renovation is mandatory: 800 MJ/m² until end of 2026, 650 from 2027, 550 from 2031. ThermoGeneva shows these comparisons as indicative only; the cantonal energy office (OCEN) determines obligations.
+- Limits: not an energy audit; does not include process energy; heat-pump buildings report electricity, which lowers their IDC.
+- Data: SITG open data (OCEN IDC dataset; FTI industrial-zone perimeters), canton boundary from swisstopo. No personal data, no user accounts.
+
+## Main pages
+- [Home (EN)](https://thermogeneva.ch/en): overview, key figures and FAQ
+- [Interactive map (EN)](https://thermogeneva.ch/en/explore): every building coloured by its benchmark class
+- [Industrial zones (EN)](https://thermogeneva.ch/en/zones): median IDC and buildings above 450 MJ/m² per zone
+- [Methodology (EN)](https://thermogeneva.ch/en/methodology): definitions, formulas, thresholds and limitations
+- [Data sources (EN)](https://thermogeneva.ch/en/data): sources, licence and updates
+- [Accueil (FR)](https://thermogeneva.ch/fr) · [Carte (FR)](https://thermogeneva.ch/fr/explore) · [Zones (FR)](https://thermogeneva.ch/fr/zones) · [Méthodologie (FR)](https://thermogeneva.ch/fr/methodology)
+
+## Sources
+- [SITG — IDC dataset](https://sitg.ge.ch/donnees/scane-indice-moyennes-3-ans)
+- [État de Genève — IDC thresholds](https://www.ge.ch/connaitre-consommation-energie-batiment-idc/que-faire-resultat-idc-votre-immeuble)
+- [Source code](https://github.com/ciro14comes/thermogeneva)

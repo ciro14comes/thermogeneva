@@ -1,15 +1,27 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import Explorer from "@/components/Explorer";
+import JsonLd from "@/components/JsonLd";
+import { breadcrumbLd, pageMeta } from "@/lib/seo";
 
-export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+type P = { params: Promise<{ locale: string }> };
+
+export async function generateMetadata({ params }: P): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "explore" });
-  return { title: t("title"), alternates: { canonical: `/${locale}/explore`, languages: { en: "/en/explore", fr: "/fr/explore" } } };
+  const t = await getTranslations({ locale, namespace: "seo" });
+  return pageMeta({ locale, path: "/explore", title: t("exploreTitle"), description: t("exploreDescription") });
 }
 
-export default async function ExplorePage({ params }: { params: Promise<{ locale: string }> }) {
+export default async function ExplorePage({ params }: P) {
   const { locale } = await params;
   setRequestLocale(locale);
-  return <Explorer />;
+  const t = await getTranslations("explore");
+  const tn = await getTranslations("nav");
+  return (
+    <>
+      <JsonLd data={breadcrumbLd([{ name: tn("home"), path: `/${locale}` }, { name: tn("explore"), path: `/${locale}/explore` }])} />
+      <p className="sr-only">{t("srIntro")}</p>
+      <Explorer />
+    </>
+  );
 }

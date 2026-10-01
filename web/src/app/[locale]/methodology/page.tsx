@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import JsonLd from "@/components/JsonLd";
+import { AUTHOR, SOURCES, absolute, breadcrumbLd, pageMeta } from "@/lib/seo";
 
 type P = { params: Promise<{ locale: string }> };
 
 export async function generateMetadata({ params }: P): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "pages" });
-  return { title: t("methodologyTitle"), alternates: { canonical: `/${locale}/methodology`, languages: { en: "/en/methodology", fr: "/fr/methodology" } } };
+  const t = await getTranslations({ locale, namespace: "seo" });
+  return pageMeta({ locale, path: "/methodology", title: t("methodologyTitle"), description: t("methodologyDescription") });
 }
 
 const EN = (
@@ -47,6 +49,12 @@ const EN = (
 
     <h2>Limitations</h2>
     <p>Values are self-declared by owners and depend on the declared heated area. Peer groups mix buildings of different ages and sizes. A high value is a reason to look closer, not a verdict: ThermoGeneva is a screening tool, not an energy audit.</p>
+    <h2>Official sources</h2>
+    <ul>
+      <li><a href={SOURCES.idcInfo}>État de Genève — Knowing a building&apos;s energy consumption (IDC)</a></li>
+      <li><a href={SOURCES.thresholds}>État de Genève — What to do depending on your building&apos;s IDC (thresholds)</a></li>
+      <li><a href={SOURCES.idc}>SITG — IDC dataset (2- and 3-year averages)</a></li>
+    </ul>
   </>
 );
 
@@ -88,6 +96,12 @@ const FR = (
 
     <h2>Limites</h2>
     <p>Les valeurs sont déclarées par les propriétaires et dépendent de la SRE déclarée. Les groupes mélangent des bâtiments d&apos;âges et de tailles différents. Une valeur élevée invite à regarder de plus près, ce n&apos;est pas un verdict : ThermoGeneva est un outil de pré-analyse, pas un audit énergétique.</p>
+    <h2>Sources officielles</h2>
+    <ul>
+      <li><a href={SOURCES.idcInfo}>État de Genève — Connaître la consommation d&apos;énergie d&apos;un bâtiment (IDC)</a></li>
+      <li><a href={SOURCES.thresholds}>État de Genève — Que faire selon le résultat IDC de votre immeuble (seuils)</a></li>
+      <li><a href={SOURCES.idc}>SITG — Jeu de données IDC (moyennes 2 et 3 ans)</a></li>
+    </ul>
   </>
 );
 
@@ -95,8 +109,27 @@ export default async function MethodologyPage({ params }: P) {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations("pages");
+  const ts = await getTranslations("seo");
+  const tn = await getTranslations("nav");
   return (
     <div className="container page">
+      <JsonLd data={[
+        breadcrumbLd([{ name: tn("home"), path: `/${locale}` }, { name: tn("methodology"), path: `/${locale}/methodology` }]),
+        {
+          "@context": "https://schema.org",
+          "@type": "TechArticle",
+          headline: t("methodologyTitle"),
+          description: ts("methodologyDescription"),
+          inLanguage: locale,
+          url: absolute(`/${locale}/methodology`),
+          author: { "@type": "Person", name: AUTHOR },
+          citation: [SOURCES.idcInfo, SOURCES.thresholds, SOURCES.idc],
+          about: [
+            { "@type": "Thing", name: locale === "fr" ? "Indice de dépense de chaleur (IDC)" : "Heat consumption index (IDC)" },
+            { "@type": "Place", name: "Canton of Geneva" },
+          ],
+        },
+      ]} />
       <div className="prose">
         <h1>{t("methodologyTitle")}</h1>
         {locale === "fr" ? FR : EN}
