@@ -5,7 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import type { Map as MLMap } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { Link } from "@/i18n/navigation";
-import { CLASS_COLOR, PALETTE, classOfBuilding, fmtNum, fmtOrdinal, fmtPct, idcColor, trendColor, type BenchClass } from "@/lib/format";
+import { CLASS_COLOR, PALETTE, classOfBuilding, energyLabel, fmtNum, fmtOrdinal, fmtPct, idcColor, trendColor, type BenchClass } from "@/lib/format";
 import { IconArrowLeft, IconChevron, IconList, IconMap, IconSearch } from "./icons";
 
 /* ---------------- tipi ---------------- */
@@ -24,6 +24,8 @@ type Props = {
   energy_source: string | null;
   sre: number | null;
   above_450: boolean | null;
+  above_significant_until_2026?: boolean | null;
+  above_significant_from_2027?: boolean | null;
   trend_3y_pct: number | null;
   is_stale: boolean;
   commune?: string | null;
@@ -80,6 +82,8 @@ function normalize(p: Props): Props {
     delta_vs_peer_pct: toNum(p.delta_vs_peer_pct), peer_median: toNum(p.peer_median),
     final_energy_mwh: toNum(p.final_energy_mwh), sre: toNum(p.sre), trend_3y_pct: toNum(p.trend_3y_pct),
     above_450: p.above_450 === true || (p.above_450 as unknown) === "true",
+    above_significant_until_2026: p.above_significant_until_2026 === true || (p.above_significant_until_2026 as unknown) === "true",
+    above_significant_from_2027: p.above_significant_from_2027 === true || (p.above_significant_from_2027 as unknown) === "true",
     is_stale: p.is_stale === true || (p.is_stale as unknown) === "true",
     zone_id: p.zone_id === null || p.zone_id === undefined || (p.zone_id as unknown) === "null" ? (null as unknown as number) : Number(p.zone_id),
   };
@@ -605,7 +609,11 @@ export default function Explorer() {
                   </div>
                   <div className="bench-scale"><span>P0</span><span>{tb("peerMedian")}</span><span>P100</span></div>
                 </div>
-                <p className="small" style={{ margin: "10px 0 0" }}>{tb("percentileExplain", { p: b.peer_percentile })}</p>
+                <p className="small" style={{ margin: "10px 0 0" }}>
+                  {b.is_stale
+                    ? tb("percentileExplainYear", { p: b.peer_percentile, year: b.year })
+                    : tb("percentileExplain", { p: b.peer_percentile })}
+                </p>
               </>
             ) : (
               <p className="note">{tb("peerTooSmall")}</p>
@@ -619,7 +627,7 @@ export default function Explorer() {
               <dt>{tb("idcAvg3y")}</dt><dd>{fmtNum(b.idc_avg_3y, locale)}</dd>
               <dt>{tb("trend3y")}</dt><dd className="trend" style={{ color: trendColor(b.trend_3y_pct) }}>{fmtPct(b.trend_3y_pct, locale)}</dd>
               <dt>{tb("finalEnergy")}</dt><dd>{fmtNum(b.final_energy_mwh, locale)} MWh</dd>
-              <dt>{tb("energySource")}</dt><dd>{b.energy_source ?? "—"}</dd>
+              <dt>{tb("energySource")}</dt><dd>{energyLabel(b.energy_source, locale)}</dd>
             </dl>
           </div>
 
@@ -634,10 +642,14 @@ export default function Explorer() {
           <div className="panel-block">
             {b.idc_avg_3y == null ? (
               <span className="badge">{tb("noAvg")}</span>
-            ) : b.above_450 ? (
-              <span className="badge badge-warn">{tb("threshold450")}: {tb("above")}</span>
             ) : (
-              <span className="badge badge-ok">450: {tb("below")}</span>
+              <span className={`badge ${b.above_450 ? "badge-warn" : "badge-ok"}`} style={{ whiteSpace: "normal", lineHeight: 1.35 }}>
+                {b.above_significant_until_2026 ? tb("cardThreshold800")
+                  : b.above_significant_from_2027 ? tb("cardThreshold650")
+                  : b.above_450 ? tb("cardThreshold450")
+                  : tb("cardBelow450")}
+                {b.is_stale ? ` (${tb("dataUpTo", { year: b.year })})` : ""}
+              </span>
             )}
             <div className="btn-row">
               <Link href={`/buildings/${b.egid}`} className="btn btn-primary">{t("fullAnalysis")}</Link>

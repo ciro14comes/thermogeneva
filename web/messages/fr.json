@@ -135,7 +135,13 @@
     "openZone": "Analyse de la zone",
     "notFound": "Ce bâtiment ne fait pas partie du jeu de données des zones industrielles.",
     "staleNote": "Donnée non actualisée : la dernière déclaration d'IDC de ce bâtiment date de {year}. Elle est affichée à titre indicatif mais exclue des statistiques.",
-    "outsideFti": "Hors zones FTI"
+    "outsideFti": "Hors zones FTI",
+    "cardThreshold800": "Moyenne sur 3 ans au-dessus de 800 MJ/m² : rénovation énergétique obligatoire",
+    "cardThreshold650": "Moyenne sur 3 ans au-dessus de 650 MJ/m² : rénovation obligatoire dès 2027",
+    "cardThreshold450": "Moyenne sur 3 ans au-dessus de 450 MJ/m² : mesures d'amélioration exigées",
+    "cardBelow450": "Moyenne sur 3 ans en dessous de 450 MJ/m²",
+    "dataUpTo": "données jusqu'en {year}",
+    "percentileExplainYear": "En {year}, IDC plus élevé que {p} % des bâtiments similaires."
   },
   "zones": {
     "title": "Zones industrielles de Genève : consommation de chaleur (IDC) par zone",

@@ -89,7 +89,7 @@ export type ZoneMetric = {
 };
 
 // Cambiare DATA_VERSION invalida la cache di Next.js dopo modifiche alla struttura delle viste.
-const DATA_VERSION = "4";
+const DATA_VERSION = "5";
 
 async function rest<T>(path: string): Promise<T> {
   if (!SUPABASE_URL || !SUPABASE_KEY) {
@@ -133,6 +133,11 @@ function num<T extends Record<string, unknown>>(row: T): T {
     }
   }
   return out as T;
+}
+
+/** EGID valido: solo cifre (max 10). Evita che input arbitrari finiscano nella query verso Supabase. */
+export function parseEgid(raw: string): number | null {
+  return /^\d{1,10}$/.test(raw) ? Number(raw) : null;
 }
 
 export async function getBuilding(egid: number): Promise<BuildingLatest | null> {

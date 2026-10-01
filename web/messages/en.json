@@ -135,7 +135,13 @@
     "openZone": "Zone analytics",
     "notFound": "This building is not part of the industrial-zone dataset.",
     "staleNote": "Outdated data: the last IDC declaration for this building dates from {year}. It is shown for reference but excluded from statistics.",
-    "outsideFti": "Outside FTI zones"
+    "outsideFti": "Outside FTI zones",
+    "cardThreshold800": "3-year average above 800 MJ/m²: energy renovation mandatory",
+    "cardThreshold650": "3-year average above 650 MJ/m²: renovation mandatory from 2027",
+    "cardThreshold450": "3-year average above 450 MJ/m²: improvement measures required",
+    "cardBelow450": "3-year average below 450 MJ/m²",
+    "dataUpTo": "data up to {year}",
+    "percentileExplainYear": "In {year}, higher IDC than {p} % of similar buildings."
   },
   "zones": {
     "title": "Geneva industrial zones: heat consumption (IDC) by zone",

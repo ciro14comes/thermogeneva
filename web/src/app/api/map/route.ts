@@ -10,6 +10,7 @@ export async function GET() {
       headers: { "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400" },
     });
   } catch (e) {
-    return Response.json({ error: String(e) }, { status: 502 });
+    console.error("api/map", e);   // dettagli solo nei log del server, non al pubblico
+    return Response.json({ error: "data temporarily unavailable" }, { status: 502 });
   }
 }

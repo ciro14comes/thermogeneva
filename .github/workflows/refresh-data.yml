@@ -8,6 +8,10 @@ on:
     - cron: "17 4 * * 1"   # lunedì 04:17 UTC (≈ 06:17 a Ginevra in estate)
   workflow_dispatch:
 
+# Permessi minimi: il job legge solo il codice, non scrive nulla sul repository
+permissions:
+  contents: read
+
 concurrency:
   group: refresh-data
   cancel-in-progress: false

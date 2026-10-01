@@ -123,3 +123,31 @@ export function classOf(p: number | null | undefined): BenchClass {
   if (p <= 75) return "mid";
   return "high";
 }
+
+/** Agente energetico: il dataset SITG è in francese; sulla versione inglese lo traduciamo. */
+const ENERGY_EN: [RegExp, string][] = [
+  [/^Électricité PAC \(DD après le 5 août 2010\)$/i, "Heat pump electricity (after 5 Aug 2010)"],
+  [/^Électricité PAC \(DD avant le 5 août 2010\)$/i, "Heat pump electricity (before 5 Aug 2010)"],
+  [/^PAC - Électricité consommée$/i, "Heat pump (electricity consumed)"],
+  [/^PAC - Comptage de chaleur$/i, "Heat pump (heat metering)"],
+  [/^Électricité directe$/i, "Direct electric heating"],
+  [/^Chauffage à distance$/i, "District heating"],
+  [/^CAD tarifé$/i, "District heating (metered tariff)"],
+  [/^CAD réparti$/i, "District heating (allocated)"],
+  [/^Gaz - Sous-comptage de chaleur$/i, "Gas (heat sub-metering)"],
+  [/^Mazout - Sous-comptage de chaleur$/i, "Heating oil (heat sub-metering)"],
+  [/^Bois - Sous-comptage de chaleur$/i, "Wood (heat sub-metering)"],
+  [/^Bois plaquettes dur$/i, "Wood chips (hardwood)"],
+  [/^Bois plaquettes PCI$/i, "Wood chips (calorific value)"],
+  [/^Bois en pellets$/i, "Wood pellets"],
+  [/^Bois en bûches dur$/i, "Firewood logs (hardwood)"],
+  [/^Gaz$/i, "Gas"],
+  [/^Mazout$/i, "Heating oil"],
+  [/^Autre$/i, "Other"],
+];
+export function energyLabel(src: string | null | undefined, locale: string): string {
+  if (!src) return "—";
+  if (locale !== "en") return src;
+  for (const [re, en] of ENERGY_EN) if (re.test(src.trim())) return en;
+  return src;
+}

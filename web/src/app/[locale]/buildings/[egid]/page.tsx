@@ -3,8 +3,8 @@ import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import HistoryChart from "@/components/HistoryChart";
-import { getBuilding, getBuildingHistory, getZones, zoneLabel } from "@/lib/data";
-import { fmtNum, fmtOrdinal, fmtPct, trendColor } from "@/lib/format";
+import { parseEgid, getBuilding, getBuildingHistory, getZones, zoneLabel } from "@/lib/data";
+import { energyLabel, fmtNum, fmtOrdinal, fmtPct, trendColor } from "@/lib/format";
 import { pageMeta } from "@/lib/seo";
 
 export const revalidate = 3600;
@@ -13,7 +13,8 @@ type Params = { params: Promise<{ locale: string; egid: string }> };
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { locale, egid } = await params;
-  const b = Number.isFinite(Number(egid)) ? await getBuilding(Number(egid)) : null;
+  const id = parseEgid(egid);
+  const b = id !== null ? await getBuilding(id) : null;
   if (!b) return { robots: { index: false, follow: true } };
   const t = await getTranslations({ locale, namespace: "seo" });
   const tf = await getTranslations({ locale, namespace: "families" });
@@ -34,8 +35,8 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 export default async function BuildingPage({ params }: Params) {
   const { locale, egid } = await params;
   setRequestLocale(locale);
-  const id = Number(egid);
-  if (!Number.isInteger(id)) notFound();
+  const id = parseEgid(egid);
+  if (id === null) notFound();
 
   const t = await getTranslations("building");
   const tf = await getTranslations("families");
@@ -114,7 +115,7 @@ export default async function BuildingPage({ params }: Params) {
                 <dt>{t("percentile")}</dt><dd>{fmtOrdinal(b.peer_percentile, locale)}</dd>
                 <dt>{t("zoneMedian")}</dt><dd>{b.zone_median != null ? `${fmtNum(b.zone_median, locale)} (${fmtPct(b.delta_vs_zone_pct, locale)})` : "—"}</dd>
               </dl>
-              <p style={{ marginTop: 12 }}>{t("percentileExplain", { p: b.peer_percentile })} {reading}</p>
+              <p style={{ marginTop: 12 }}>{b.is_stale ? t("percentileExplainYear", { p: b.peer_percentile, year: b.year }) : t("percentileExplain", { p: b.peer_percentile })} {reading}</p>
               <p className="note">{t("peerGroup", { family: tf(b.family), year: b.year, n: b.peer_n })}</p>
               {b.zone_median == null && <p className="note">{t("zoneTooSmall")}</p>}
             </>
@@ -158,7 +159,7 @@ export default async function BuildingPage({ params }: Params) {
         <dl className="kv">
           <dt>{t("type")}</dt><dd style={{ fontFamily: "inherit" }}>{tf(b.family)}</dd>
           <dt>{t("destination")}</dt><dd style={{ fontFamily: "inherit" }}>{b.destination ?? "—"}</dd>
-          <dt>{t("energySource")}</dt><dd style={{ fontFamily: "inherit" }}>{b.energy_source ?? "—"}</dd>
+          <dt>{t("energySource")}</dt><dd style={{ fontFamily: "inherit" }}>{energyLabel(b.energy_source, locale)}</dd>
           <dt>{t("zone")}</dt><dd style={{ fontFamily: "inherit" }}>{zone ? zoneLabel(zone) : t("outsideFti")}</dd>
         </dl>
         <p className="note">{t("finalEnergyNote")}</p>

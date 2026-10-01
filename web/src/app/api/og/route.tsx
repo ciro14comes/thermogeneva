@@ -15,11 +15,8 @@ export async function GET(req: Request) {
       <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", justifyContent: "space-between",
         padding: 72, background: "#F8FAFC", color: "#0F172A", fontFamily: "sans-serif" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
-          <div style={{ width: 64, height: 64, borderRadius: 18, background: "#0F172A", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
-            <div style={{ width: 7, height: 18, borderRadius: 4, background: "#14B8A6" }} />
-            <div style={{ width: 7, height: 30, borderRadius: 4, background: "#ffffff" }} />
-            <div style={{ width: 7, height: 24, borderRadius: 4, background: "#2563EB" }} />
-          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text */}
+          <img src={new URL("/logo.png", req.url).toString()} width={72} height={72} />
           <div style={{ fontSize: 40, fontWeight: 700 }}>ThermoGeneva</div>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>

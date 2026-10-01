@@ -11,6 +11,7 @@ export async function GET() {
       headers: { "Cache-Control": "public, s-maxage=86400, stale-while-revalidate=604800" },
     });
   } catch (e) {
-    return Response.json({ error: String(e) }, { status: 502 });
+    console.error("api/canton", e);   // dettagli solo nei log del server, non al pubblico
+    return Response.json({ error: "data temporarily unavailable" }, { status: 502 });
   }
 }

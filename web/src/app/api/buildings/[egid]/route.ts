@@ -1,11 +1,11 @@
-import { getBuilding, getBuildingHistory } from "@/lib/data";
+import { getBuilding, getBuildingHistory, parseEgid } from "@/lib/data";
 
 export const revalidate = 3600;
 
 export async function GET(_req: Request, { params }: { params: Promise<{ egid: string }> }) {
   const { egid } = await params;
-  const id = Number(egid);
-  if (!Number.isInteger(id)) return Response.json({ error: "invalid egid" }, { status: 400 });
+  const id = parseEgid(egid);
+  if (id === null) return Response.json({ error: "invalid egid" }, { status: 400 });
   try {
     const [building, history] = await Promise.all([getBuilding(id), getBuildingHistory(id)]);
     if (!building) return Response.json({ error: "not found" }, { status: 404 });
@@ -13,6 +13,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ egid: s
       headers: { "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400" },
     });
   } catch (e) {
-    return Response.json({ error: String(e) }, { status: 502 });
+    console.error("api/buildings", e);   // dettagli solo nei log del server, non al pubblico
+    return Response.json({ error: "data temporarily unavailable" }, { status: 502 });
   }
 }

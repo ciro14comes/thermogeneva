@@ -54,9 +54,8 @@ export default function Sidebar({ lastRefresh }: { lastRefresh: string }) {
     <aside className="sidebar">
       <div className="side-top">
         <Link href="/" className="side-brand" aria-label="ThermoGeneva">
-          <span className="side-logo" aria-hidden>
-            <span /><span /><span />
-          </span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img className="side-logo" src="/logo.png" alt="" width={34} height={34} />
           <span className="side-label side-brand-name">ThermoGeneva</span>
         </Link>
         <button
