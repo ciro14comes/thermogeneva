@@ -3,7 +3,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 
 type P = { params: Promise<{ locale: string }> };
 
-const CONTACT = process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "";
+const CONTACT = process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "ciro14comes@gmail.com";
 
 export async function generateMetadata({ params }: P): Promise<Metadata> {
   const { locale } = await params;
