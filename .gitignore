@@ -1,0 +1,18 @@
+# Ambiente Python
+.venv/
+__pycache__/
+*.pyc
+
+# Dati scaricati (si rigenerano con lo script, troppo pesanti per git)
+data/
+
+# Segreti
+.env
+.env.local
+
+# macOS
+.DS_Store
+
+# Node / Next.js (servirà più avanti)
+node_modules/
+.next/
