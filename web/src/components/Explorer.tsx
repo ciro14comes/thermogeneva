@@ -5,7 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import type { Map as MLMap } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { Link } from "@/i18n/navigation";
-import { CLASS_COLOR, PALETTE, classOf, fmtNum, fmtOrdinal, fmtPct, idcColor, trendColor, type BenchClass } from "@/lib/format";
+import { CLASS_COLOR, PALETTE, classOfBuilding, fmtNum, fmtOrdinal, fmtPct, idcColor, trendColor, type BenchClass } from "@/lib/format";
 import { IconArrowLeft, IconChevron, IconList, IconMap, IconSearch } from "./icons";
 
 /* ---------------- tipi ---------------- */
@@ -25,6 +25,8 @@ type Props = {
   sre: number | null;
   above_450: boolean | null;
   trend_3y_pct: number | null;
+  is_stale: boolean;
+  commune?: string | null;
 };
 type ZoneProps = { zone_id: number; zone_type: string; zone_name: string | null; slug: string; commune: string | null };
 type Geom = { type: string; coordinates: number[][][][] | number[][][] };
@@ -42,6 +44,7 @@ const PANEL_W = 388 + 36;
 /* ---------------- espressioni colore MapLibre ---------------- */
 const CLASS_EXPR = [
   "case",
+  ["==", ["get", "is_stale"], true], CLASS_COLOR.old,
   ["==", ["get", "peer_percentile"], null], CLASS_COLOR.none,
   ["<=", ["get", "peer_percentile"], 25], CLASS_COLOR.good,
   ["<=", ["get", "peer_percentile"], 75], CLASS_COLOR.mid,
@@ -72,11 +75,13 @@ function toNum(v: unknown): number | null {
 function normalize(p: Props): Props {
   return {
     ...p,
-    egid: Number(p.egid), zone_id: Number(p.zone_id), year: Number(p.year), idc: Number(p.idc),
+    egid: Number(p.egid), year: Number(p.year), idc: Number(p.idc),
     idc_avg_3y: toNum(p.idc_avg_3y), peer_percentile: toNum(p.peer_percentile),
     delta_vs_peer_pct: toNum(p.delta_vs_peer_pct), peer_median: toNum(p.peer_median),
     final_energy_mwh: toNum(p.final_energy_mwh), sre: toNum(p.sre), trend_3y_pct: toNum(p.trend_3y_pct),
     above_450: p.above_450 === true || (p.above_450 as unknown) === "true",
+    is_stale: p.is_stale === true || (p.is_stale as unknown) === "true",
+    zone_id: p.zone_id === null || p.zone_id === undefined || (p.zone_id as unknown) === "null" ? (null as unknown as number) : Number(p.zone_id),
   };
 }
 function median(xs: number[]): number | null {
@@ -146,32 +151,34 @@ export default function Explorer() {
     if (!data) return [];
     return data.buildings.features
       .map((f) => f.properties)
-      .filter((p) => (family === "all" || p.family === family) && (zoneId === "all" || p.zone_id === Number(zoneId)));
+      .filter((p) => (family === "all" || p.family === family) && (zoneId === "all" || (zoneId === "none" ? p.zone_id == null : p.zone_id === Number(zoneId))));
   }, [data, family, zoneId]);
 
   const shown = useMemo(
-    () => (classFilter ? visible.filter((p) => classOf(p.peer_percentile) === classFilter) : visible),
+    () => (classFilter ? visible.filter((p) => classOfBuilding(p.peer_percentile, p.is_stale) === classFilter) : visible),
     [visible, classFilter],
   );
 
   const stats = useMemo(() => {
-    const counts: Record<BenchClass, number> = { good: 0, mid: 0, high: 0, none: 0 };
-    visible.forEach((p) => counts[classOf(p.peer_percentile)]++);
-    const withPeer = visible.filter((p) => p.peer_median != null);
+    const counts: Record<BenchClass, number> = { good: 0, mid: 0, high: 0, none: 0, old: 0 };
+    visible.forEach((p) => counts[classOfBuilding(p.peer_percentile, p.is_stale)]++);
+    // statistiche solo sui dati aggiornati
+    const fresh = shown.filter((p) => !p.is_stale);
+    const withPeer = visible.filter((p) => !p.is_stale && p.peer_median != null);
     const abovePeer = withPeer.filter((p) => p.idc > (p.peer_median ?? Infinity)).length;
     return {
       counts,
       sharePct: withPeer.length ? Math.round((100 * abovePeer) / withPeer.length) : null,
-      medianIdc: median(shown.map((p) => p.idc)),
-      above450: shown.filter((p) => p.above_450).length,
-      energy: shown.reduce((s, p) => s + (p.final_energy_mwh ?? 0), 0),
+      medianIdc: median(fresh.map((p) => p.idc)),
+      above450: fresh.filter((p) => p.above_450).length,
+      energy: fresh.reduce((s, p) => s + (p.final_energy_mwh ?? 0), 0),
       n: shown.length,
     };
   }, [visible, shown]);
 
   const hist = useMemo(() => {
     const bins = Array.from({ length: 20 }, (_, i) => ({ from: i * 50, n: 0 }));
-    shown.forEach((p) => { bins[Math.min(19, Math.max(0, Math.floor(p.idc / 50)))].n++; });
+    shown.filter((p) => !p.is_stale).forEach((p) => { bins[Math.min(19, Math.max(0, Math.floor(p.idc / 50)))].n++; });
     return { bins, max: Math.max(1, ...bins.map((b) => b.n)) };
   }, [shown]);
 
@@ -330,7 +337,11 @@ export default function Explorer() {
     if (!map || !mapReady) return;
     const conds: unknown[] = ["all"];
     if (family !== "all") conds.push(["==", ["get", "family"], family]);
-    if (zoneId !== "all") conds.push(["==", ["get", "zone_id"], Number(zoneId)]);
+    if (zoneId === "none") conds.push(["==", ["get", "zone_id"], null]);
+    else if (zoneId !== "all") conds.push(["==", ["get", "zone_id"], Number(zoneId)]);
+    const fresh = ["!=", ["get", "is_stale"], true];
+    if (classFilter === "old") conds.push(["==", ["get", "is_stale"], true]);
+    if (classFilter && classFilter !== "old") conds.push(fresh);
     if (classFilter === "none") conds.push(["==", ["get", "peer_percentile"], null]);
     if (classFilter === "good") conds.push(["all", ["!=", ["get", "peer_percentile"], null], ["<=", ["get", "peer_percentile"], 25]]);
     if (classFilter === "mid") conds.push(["all", ["!=", ["get", "peer_percentile"], null], [">", ["get", "peer_percentile"], 25], ["<=", ["get", "peer_percentile"], 75]]);
@@ -342,7 +353,7 @@ export default function Explorer() {
   /* zoom sulla zona scelta */
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !mapReady || !data || zoneId === "all") return;
+    if (!map || !mapReady || !data || zoneId === "all" || zoneId === "none") return;
     const z = data.zones.features.find((f) => Number(f.properties.zone_id) === Number(zoneId));
     if (!z) return;
     const ring = firstRing(z.geometry);
@@ -401,12 +412,13 @@ export default function Explorer() {
       padding: { left: window.innerWidth > 900 ? PANEL_W : 0, top: 0, right: 0, bottom: 0 } });
   }
 
-  const zoneSel = zoneId === "all" ? undefined : zonesById.get(Number(zoneId));
+  const zoneSel = zoneId === "all" || zoneId === "none" ? undefined : zonesById.get(Number(zoneId));
   const classes: { key: BenchClass; label: string; sub: string }[] = [
     { key: "good", label: t("classGood"), sub: "≤ P25" },
     { key: "mid", label: t("classMid"), sub: "P25 – P75" },
     { key: "high", label: t("classHigh"), sub: "> P75" },
     { key: "none", label: t("classNone"), sub: t("classNoneSub") },
+    { key: "old", label: t("classOld"), sub: t("classOldSub", { year: new Date().getFullYear() - 6 }) },
   ];
 
   /* ================= render ================= */
@@ -423,7 +435,7 @@ export default function Explorer() {
             <header className="panel-head">
               <h1 className="panel-crumb" style={{ fontWeight: 400, margin: "0 0 2px", letterSpacing: 0 }}>{t("h1")}</h1>
               <div className="panel-title">
-                Genève <IconChevron size={16} /> {zoneSel ? zoneLabel(zoneSel) : t("allZones")}
+                Genève <IconChevron size={16} /> {zoneSel ? zoneLabel(zoneSel) : zoneId === "none" ? t("outsideFti") : t("allZones")}
               </div>
               <div className="search-box">
                 <IconSearch size={16} />
@@ -434,7 +446,7 @@ export default function Explorer() {
                     {results.map((f) => (
                       <li key={f.properties.egid}>
                         <button type="button" onClick={() => selectEgid(f.properties.egid)}>
-                          <span className="dot" style={{ background: CLASS_COLOR[classOf(f.properties.peer_percentile)] }} />
+                          <span className="dot" style={{ background: CLASS_COLOR[classOfBuilding(f.properties.peer_percentile, f.properties.is_stale)] }} />
                           {f.properties.address ?? "—"} <span className="muted small">· {f.properties.egid}</span>
                         </button>
                       </li>
@@ -445,6 +457,7 @@ export default function Explorer() {
               <div className="filters">
                 <select value={zoneId} onChange={(e) => setZoneId(e.target.value)} aria-label={t("zone")}>
                   <option value="all">{t("allZones")}</option>
+                  <option value="none">{t("outsideFti")}</option>
                   {zoneOptions.map((z) => <option key={z.zone_id} value={z.zone_id}>{zoneLabel(z)}</option>)}
                 </select>
                 <select value={family} onChange={(e) => setFamily(e.target.value)} aria-label={t("family")}>
@@ -550,7 +563,7 @@ export default function Explorer() {
               <tbody>
                 {[...shown].sort((a, b) => b.idc - a.idc).map((p) => (
                   <tr key={p.egid} onClick={() => selectEgid(p.egid)}>
-                    <td className="num"><span className="dot" style={{ background: CLASS_COLOR[classOf(p.peer_percentile)] }} />{fmtNum(p.idc, locale)}</td>
+                    <td className="num"><span className="dot" style={{ background: CLASS_COLOR[classOfBuilding(p.peer_percentile, p.is_stale)] }} />{fmtNum(p.idc, locale)}</td>
                     <td>{p.address ?? `EGID ${p.egid}`}<div className="small muted">{tf(p.family)}</div></td>
                     <td className="r">{fmtOrdinal(p.peer_percentile, locale)}</td>
                   </tr>
@@ -565,13 +578,13 @@ export default function Explorer() {
 
   /* ---------------- card edificio ---------------- */
   function BuildingCard({ b, history, zone, onBack }: { b: Props; history: HistoryPoint[] | null; zone?: ZoneProps; onBack: () => void }) {
-    const cls = classOf(b.peer_percentile);
-    const clsLabel = { good: t("classGood"), mid: t("classMid"), high: t("classHigh"), none: t("classNone") }[cls];
+    const cls = classOfBuilding(b.peer_percentile, b.is_stale);
+    const clsLabel = { good: t("classGood"), mid: t("classMid"), high: t("classHigh"), none: t("classNone"), old: t("classOld") }[cls];
     return (
       <>
         <header className="panel-head">
           <button className="back-btn" onClick={onBack}><IconArrowLeft size={15} /> {t("backAll")}</button>
-          <div className="panel-crumb">{zoneLabel(zone)} · {tf(b.family)}</div>
+          <div className="panel-crumb">{zone ? zoneLabel(zone) : t("outsideFti")} · {tf(b.family)}</div>
           <div className="panel-title">{b.address ?? `EGID ${b.egid}`}</div>
           <div className="small muted">EGID <span className="num">{b.egid}</span> · {tb("year", { year: b.year })}</div>
         </header>
@@ -580,6 +593,7 @@ export default function Explorer() {
             <span className={`badge ${cls === "high" ? "badge-high" : cls === "good" ? "badge-ok" : cls === "mid" ? "badge-mid" : ""}`}>
               <span className="dot" style={{ background: CLASS_COLOR[cls], margin: 0 }} /> {clsLabel}
             </span>
+            {b.is_stale && <p className="note">{t("staleNote", { year: b.year })}</p>}
             <div className="big-idc" style={{ marginTop: 12 }}>{fmtNum(b.idc, locale)}<small>MJ/m²·{locale === "fr" ? "an" : "yr"}</small></div>
 
             {b.peer_percentile != null ? (

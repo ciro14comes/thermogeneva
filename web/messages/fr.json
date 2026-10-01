@@ -26,10 +26,10 @@
   "home": {
     "kicker": "Genève · zones industrielles FTI · données ouvertes",
     "title": "Benchmark de la consommation de chaleur des bâtiments industriels genevois",
-    "lead": "ThermoGeneva compare l'indice de dépense de chaleur (IDC) officiel de chaque bâtiment des zones industrielles genevoises avec les bâtiments du même type dans tout le canton. D'un coup d'œil, vous voyez si la consommation de chauffage et d'eau chaude d'un bâtiment est plus basse, dans la norme ou plus élevée que celle de bâtiments similaires, son évolution sur trois ans et sa position par rapport aux seuils légaux genevois.",
+    "lead": "ThermoGeneva compare l'indice de dépense de chaleur (IDC) officiel des bâtiments industriels genevois avec les bâtiments du même type dans tout le canton. Il couvre tous les bâtiments des zones industrielles FTI ainsi que l'ensemble des bâtiments industriels et logistiques du canton. D'un coup d'œil, vous voyez si la consommation de chauffage et d'eau chaude d'un bâtiment est plus basse, dans la norme ou plus élevée que celle de bâtiments similaires, son évolution sur trois ans et sa position par rapport aux seuils légaux genevois.",
     "cta": "Ouvrir la carte",
     "ctaZones": "Parcourir les zones",
-    "statBuildings": "bâtiments en zones industrielles",
+    "statBuildings": "bâtiments analysés (zones FTI + bâtiments industriels et logistiques du canton)",
     "statZones": "zones industrielles avec données",
     "statAbove450": "au-dessus de 450 MJ/m² (moyenne 3 ans)",
     "statYear": "année de référence",
@@ -40,7 +40,7 @@
     "q4": "Est-il proche des seuils légaux de l'IDC à Genève ?",
     "notTitle": "Ce qu'il n'est pas",
     "notText": "ThermoGeneva ne mesure ni l'énergie de processus ni la consommation totale d'une usine, et ne remplace pas un audit énergétique. C'est une couche de pré-analyse fondée sur des données publiques, qui indique où un examen technique plus approfondi peut être utile.",
-    "summary": "Sur la base de la dernière déclaration de chaque bâtiment, les {n} bâtiments disposant d'un IDC dans les zones industrielles genevoises affichent une médiane de {median} MJ/m² par an. {above} d'entre eux ont une moyenne sur 3 ans supérieure à 450 MJ/m², niveau à partir duquel le règlement genevois sur l'énergie exige des mesures d'amélioration.",
+    "summary": "Sur la base de la dernière déclaration de chaque bâtiment, les {n} bâtiments disposant d'un IDC à jour affichent une médiane de {median} MJ/m² par an. {above} d'entre eux ont une moyenne sur 3 ans supérieure à 450 MJ/m², niveau à partir duquel le règlement genevois sur l'énergie exige des mesures d'amélioration. {stale} autres bâtiments n'ont plus déclaré d'IDC depuis plus de six ans et sont signalés comme non actualisés.",
     "faqTitle": "Questions fréquentes",
     "howTitle": "Comment ça marche",
     "how1": "Les déclarations officielles d'IDC sont téléchargées depuis le portail de données ouvertes du SITG.",
@@ -65,7 +65,7 @@
     "fullAnalysis": "Analyse complète",
     "buildingsShown": "{count} bâtiments affichés",
     "crumbRoot": "Benchmark des zones industrielles",
-    "allZones": "Toutes les zones industrielles",
+    "allZones": "Tous les bâtiments",
     "zone": "Zone",
     "shareAbove": "Au-dessus de la médiane",
     "classGood": "Plus bas",
@@ -84,7 +84,11 @@
     "backAll": "Tous les bâtiments",
     "address": "Adresse",
     "h1": "Carte de la consommation de chaleur (IDC) dans les zones industrielles de Genève",
-    "srIntro": "Carte interactive des bâtiments des zones industrielles FTI de Genève. Chaque bâtiment est coloré selon son indice de dépense de chaleur (IDC) comparé à des bâtiments similaires du canton : plus bas, dans la norme ou plus élevé que la médiane."
+    "srIntro": "Carte interactive des bâtiments des zones industrielles FTI de Genève. Chaque bâtiment est coloré selon son indice de dépense de chaleur (IDC) comparé à des bâtiments similaires du canton : plus bas, dans la norme ou plus élevé que la médiane.",
+    "outsideFti": "Hors zones FTI",
+    "classOld": "Non actualisé",
+    "classOldSub": "avant {year}",
+    "staleNote": "Donnée non actualisée : la dernière déclaration d'IDC de ce bâtiment date de {year}. Elle est affichée à titre indicatif mais exclue des statistiques."
   },
   "building": {
     "egid": "EGID",
@@ -129,7 +133,9 @@
     "finalEnergyNote": "IDC × SRE, corrigé du climat : chauffage et eau chaude uniquement, pas l'énergie de processus.",
     "backToMap": "Retour à la carte",
     "openZone": "Analyse de la zone",
-    "notFound": "Ce bâtiment ne fait pas partie du jeu de données des zones industrielles."
+    "notFound": "Ce bâtiment ne fait pas partie du jeu de données des zones industrielles.",
+    "staleNote": "Donnée non actualisée : la dernière déclaration d'IDC de ce bâtiment date de {year}. Elle est affichée à titre indicatif mais exclue des statistiques.",
+    "outsideFti": "Hors zones FTI"
   },
   "zones": {
     "title": "Zones industrielles de Genève : consommation de chaleur (IDC) par zone",
@@ -172,9 +178,9 @@
   },
   "seo": {
     "homeTitle": "ThermoGeneva — Benchmark IDC des bâtiments industriels genevois",
-    "homeDescription": "Benchmark gratuit de l'indice de dépense de chaleur (IDC) des bâtiments des zones industrielles FTI à Genève : comparaison avec des bâtiments similaires, tendance sur 3 ans et position par rapport au seuil de 450 MJ/m².",
+    "homeDescription": "Benchmark gratuit de l'indice de dépense de chaleur (IDC) des bâtiments industriels et logistiques de Genève et de tous les bâtiments des zones industrielles FTI : comparaison, tendance sur 3 ans et seuil de 450 MJ/m².",
     "exploreTitle": "Carte interactive de l'IDC dans les zones industrielles de Genève",
-    "exploreDescription": "Explorez la carte des zones industrielles genevoises (ZIMEYSA, ZIPLO, Praille-Acacias…) et l'indice de dépense de chaleur (IDC) de chaque bâtiment comparé à des bâtiments similaires du canton.",
+    "exploreDescription": "Carte interactive de l'indice de dépense de chaleur (IDC) des bâtiments industriels et logistiques de Genève et des zones industrielles FTI (ZIMEYSA, ZIPLO, Praille-Acacias…), comparé à des bâtiments similaires du canton.",
     "zonesTitle": "Zones industrielles de Genève : IDC par zone",
     "zonesDescription": "IDC médian, nombre de bâtiments au-dessus de 450 MJ/m² et énergie finale estimée pour chaque zone industrielle FTI du canton de Genève, à partir des données ouvertes officielles.",
     "zoneTitle": "Zone industrielle {zone} : consommation de chaleur (IDC) des bâtiments",
@@ -197,7 +203,7 @@
     "q3": "Comment ThermoGeneva compare-t-il les bâtiments ?",
     "a3": "Chaque bâtiment est comparé à tous les bâtiments du même type (par exemple industrie, logistique ou bureaux) du canton de Genève pour la même année. Le site affiche la médiane du groupe, l'écart en pourcentage et le percentile. Si un groupe compte moins de 10 bâtiments, aucun benchmark n'est affiché.",
     "q4": "Quels bâtiments sont inclus ?",
-    "a4": "ThermoGeneva affiche les bâtiments situés dans les zones industrielles gérées par la Fondation pour les terrains industriels de Genève (FTI) qui déclarent un IDC. Les benchmarks sont calculés par rapport à tous les bâtiments du même type dans le canton.",
+    "a4": "ThermoGeneva affiche tous les bâtiments des zones industrielles gérées par la Fondation pour les terrains industriels de Genève (FTI) qui déclarent un IDC, ainsi que tous les bâtiments industriels et logistiques situés ailleurs dans le canton. Les benchmarks sont calculés par rapport à tous les bâtiments du même type du canton. Les bâtiments sans déclaration d'IDC depuis plus de six ans sont signalés comme non actualisés et exclus des statistiques.",
     "q5": "D'où viennent les données et à quelle fréquence sont-elles mises à jour ?",
     "a5": "Toutes les données sont des données ouvertes officielles : le jeu de données IDC de l'office cantonal de l'énergie (OCEN) et les périmètres des zones industrielles FTI publiés par le SITG, ainsi que les limites cantonales de swisstopo. Les données sont actualisées à partir des sources officielles, et la date de la dernière mise à jour est indiquée sur chaque page.",
     "q6": "ThermoGeneva est-il un audit énergétique ou une décision officielle ?",

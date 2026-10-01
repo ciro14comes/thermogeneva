@@ -49,6 +49,7 @@ export type BuildingLatest = {
   above_450: boolean | null;
   above_significant_until_2026: boolean | null;
   above_significant_from_2027: boolean | null;
+  is_stale: boolean;
 };
 
 export type HistoryPoint = {
@@ -88,7 +89,7 @@ export type ZoneMetric = {
 };
 
 // Cambiare DATA_VERSION invalida la cache di Next.js dopo modifiche alla struttura delle viste.
-const DATA_VERSION = "2";
+const DATA_VERSION = "3";
 
 async function rest<T>(path: string): Promise<T> {
   if (!SUPABASE_URL || !SUPABASE_KEY) {

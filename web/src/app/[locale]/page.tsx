@@ -33,9 +33,11 @@ export default async function Home({ params }: P) {
 
   const [buildings, metrics] = await Promise.all([getAllBuildings(), getZoneMetrics()]);
   const refYear = referenceYear(metrics);
-  const zonesWithData = new Set(buildings.map((b) => b.zone_id)).size;
-  const above450 = buildings.filter((b) => b.above_450).length;
-  const med = median(buildings.map((b) => b.idc));
+  const fresh = buildings.filter((b) => !b.is_stale);
+  const stale = buildings.length - fresh.length;
+  const zonesWithData = new Set(buildings.filter((b) => b.zone_id != null).map((b) => b.zone_id)).size;
+  const above450 = fresh.filter((b) => b.above_450).length;
+  const med = median(fresh.map((b) => b.idc));
 
   const faq = FAQ_KEYS.map((k) => ({ q: tf(`q${k}`), a: tf(`a${k}`) }));
 
@@ -72,7 +74,7 @@ export default async function Home({ params }: P) {
 
       {med != null && (
         <p className="section" style={{ maxWidth: 760 }}>
-          {t("summary", { n: fmtNum(buildings.length, locale), median: fmtNum(med, locale), above: fmtNum(above450, locale) })}
+          {t("summary", { n: fmtNum(fresh.length, locale), median: fmtNum(med, locale), above: fmtNum(above450, locale), stale: fmtNum(stale, locale) })}
         </p>
       )}
 

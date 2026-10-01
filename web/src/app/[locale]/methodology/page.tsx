@@ -18,7 +18,7 @@ const EN = (
     <p>The IDC does <strong>not</strong> include process energy, cooling, lighting or equipment. For district heating, the delivered heat is counted; for heat pumps, the electricity used is counted — which makes heat-pump buildings look lower than fuel-based ones.</p>
 
     <h2>Which buildings are shown</h2>
-    <p>Buildings whose footprint lies mainly (≥ 50 % of the area) inside an industrial zone managed by the FTI foundation. When no zone covers half of the footprint, a point inside the building decides; otherwise the building is unassigned. The assignment method is stored for each building.</p>
+    <p>Two groups of buildings are shown: every building in the industrial zones managed by the FTI foundation, and all industrial and logistics buildings elsewhere in the canton of Geneva. Buildings whose last IDC declaration is more than six years old are shown as outdated and excluded from statistics and medians. A building belongs to an FTI zone when its footprint lies mainly (≥ 50 % of the area) inside it. When no zone covers half of the footprint, a point inside the building decides; otherwise the building is unassigned. The assignment method is stored for each building.</p>
 
     <h2>Peer benchmark</h2>
     <ul>
@@ -65,7 +65,7 @@ const FR = (
     <p>L&apos;IDC n&apos;inclut <strong>pas</strong> l&apos;énergie de processus, le froid, l&apos;éclairage ni les équipements. Pour le chauffage à distance, la chaleur livrée est comptée ; pour les pompes à chaleur, l&apos;électricité consommée — ce qui donne des valeurs plus basses que les systèmes à combustible.</p>
 
     <h2>Bâtiments affichés</h2>
-    <p>Les bâtiments dont l&apos;emprise se trouve majoritairement (≥ 50 % de la surface) dans une zone industrielle gérée par la FTI. Si aucune zone ne couvre la moitié de l&apos;emprise, un point situé dans le bâtiment décide ; sinon le bâtiment n&apos;est pas attribué. La méthode d&apos;attribution est conservée pour chaque bâtiment.</p>
+    <p>Deux groupes de bâtiments sont affichés : tous les bâtiments des zones industrielles gérées par la FTI, et tous les bâtiments industriels et logistiques situés ailleurs dans le canton de Genève. Les bâtiments dont la dernière déclaration d&apos;IDC date de plus de six ans sont signalés comme non actualisés et exclus des statistiques et des médianes. Un bâtiment appartient à une zone FTI lorsque son emprise s&apos;y trouve majoritairement (≥ 50 % de la surface). Si aucune zone ne couvre la moitié de l&apos;emprise, un point situé dans le bâtiment décide ; sinon le bâtiment n&apos;est pas attribué. La méthode d&apos;attribution est conservée pour chaque bâtiment.</p>
 
     <h2>Benchmark par groupe</h2>
     <ul>

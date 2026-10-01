@@ -67,7 +67,7 @@ function mix(a: string, b: string, t: number): string {
 }
 
 /** Classi di benchmark (stile "stato" della UI): ≤ P25 efficiente, P25–P75 nella norma, > P75 alto. */
-export type BenchClass = "good" | "mid" | "high" | "none";
+export type BenchClass = "good" | "mid" | "high" | "none" | "old";
 
 /* Palette v2 (ott. 2026). Palette v1 per tornare indietro:
    good #2fc79a · mid #5a8dee · high #ef4f5f · none #8a919c */
@@ -90,6 +90,7 @@ export const CLASS_COLOR: Record<BenchClass, string> = {
   mid: "#5B8DEF",    // Typical
   high: "#F26B6B",   // Higher
   none: "#94A3B8",   // No benchmark
+  old: "#CBD5E1",    // Dato non aggiornato (ultima dichiarazione > 6 anni)
 };
 
 /** IDC continuo (MJ/m²·anno) sulla scala blu: ≤200 chiaro → ≥800 scuro. */
@@ -109,6 +110,11 @@ export function trendColor(pct: number | null | undefined): string {
   if (pct <= -2) return PALETTE.trend.positive;
   if (pct >= 2) return PALETTE.trend.negative;
   return PALETTE.trend.neutral;
+}
+
+/** Classe che tiene conto anche dei dati non aggiornati. */
+export function classOfBuilding(p: number | null | undefined, stale?: boolean | null): BenchClass {
+  return stale ? "old" : classOf(p);
 }
 
 export function classOf(p: number | null | undefined): BenchClass {

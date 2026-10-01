@@ -75,6 +75,7 @@ export default async function BuildingPage({ params }: Params) {
         )}
       </p>
 
+      {b.is_stale && <p className="note">{t("staleNote", { year: b.year })}</p>}
       <div className="grid grid-4 section">
         <div className="card">
           <div className="stat-value">{fmtNum(b.idc, locale)}</div>
@@ -158,7 +159,7 @@ export default async function BuildingPage({ params }: Params) {
           <dt>{t("type")}</dt><dd style={{ fontFamily: "inherit" }}>{tf(b.family)}</dd>
           <dt>{t("destination")}</dt><dd style={{ fontFamily: "inherit" }}>{b.destination ?? "—"}</dd>
           <dt>{t("energySource")}</dt><dd style={{ fontFamily: "inherit" }}>{b.energy_source ?? "—"}</dd>
-          <dt>{t("zone")}</dt><dd style={{ fontFamily: "inherit" }}>{zone ? zoneLabel(zone) : "—"}</dd>
+          <dt>{t("zone")}</dt><dd style={{ fontFamily: "inherit" }}>{zone ? zoneLabel(zone) : t("outsideFti")}</dd>
         </dl>
         <p className="note">{t("finalEnergyNote")}</p>
         {isHeatPump && <p className="note">{t("heatPumpNote")}</p>}
