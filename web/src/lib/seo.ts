@@ -107,7 +107,7 @@ export function datasetLd(opts: { locale: string; name: string; description: str
     variableMeasured: [
       { "@type": "PropertyValue", name: "IDC", unitText: "MJ/m²·year", description: "Climate-corrected heat consumption (heating + hot water) per m² of heated floor area" },
       { "@type": "PropertyValue", name: "Peer percentile", unitText: "percent" },
-      { "@type": "PropertyValue", name: "Estimated final energy", unitText: "MWh/year" },
+      { "@type": "PropertyValue", name: "Estimated thermal energy", unitText: "MWh/year" },
     ],
     ...(opts.dateModified ? { dateModified: opts.dateModified } : {}),
   };

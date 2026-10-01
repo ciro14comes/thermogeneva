@@ -33,7 +33,7 @@ const EN = (
     <h2>Trend and estimated energy</h2>
     <ul>
       <li><strong>3-year trend</strong>: change between the latest IDC and the IDC of the same building three years earlier. Because the IDC is climate-corrected, years are comparable.</li>
-      <li><strong>Estimated final energy</strong> = IDC × SRE / 3600, in MWh per year, climate-normalised. It is an order of magnitude for heating and hot water, not a metered total.</li>
+      <li><strong>Estimated thermal energy</strong> = IDC × SRE / 3600, in MWh per year, climate-normalised. It is an order of magnitude for heating and hot water, not a metered total.</li>
     </ul>
 
     <h2>Legal thresholds (indicative)</h2>
@@ -81,7 +81,7 @@ const FR = (
     <h2>Tendance et énergie estimée</h2>
     <ul>
       <li><strong>Tendance sur 3 ans</strong> : évolution entre le dernier IDC et celui du même bâtiment trois ans plus tôt. L&apos;IDC étant corrigé du climat, les années sont comparables.</li>
-      <li><strong>Énergie finale estimée</strong> = IDC × SRE / 3600, en MWh par an, corrigée du climat. C&apos;est un ordre de grandeur pour le chauffage et l&apos;eau chaude, pas une mesure de compteur.</li>
+      <li><strong>Énergie thermique estimée</strong> = IDC × SRE / 3600, en MWh par an, corrigée du climat. C&apos;est un ordre de grandeur pour le chauffage et l&apos;eau chaude, pas une mesure de compteur.</li>
     </ul>
 
     <h2>Seuils légaux (indicatif)</h2>

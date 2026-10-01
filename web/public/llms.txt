@@ -6,7 +6,7 @@ ThermoGeneva compares each building's official heat consumption index (IDC, "ind
 
 Key facts:
 - Scope: every building with an IDC in the industrial zones managed by the Fondation pour les terrains industriels de Genève (FTI), plus all industrial and logistics buildings elsewhere in the canton. Buildings whose last IDC declaration is more than six years old are flagged as outdated and excluded from statistics.
-- Benchmark: peer group = same building type (industrial, logistics, offices, …) in the whole canton, same year; minimum 10 buildings. Outputs: peer median, difference in %, percentile, 3-year trend, estimated final energy (IDC × SRE / 3600, MWh/year).
+- Benchmark: peer group = same building type (industrial, logistics, offices, …) in the whole canton, same year; minimum 10 buildings. Outputs: peer median, difference in %, percentile, 3-year trend, estimated thermal energy (IDC × SRE / 3600, MWh/year).
 - Classes: Lower (≤ 25th percentile), Typical (25th–75th), Higher (> 75th), No benchmark (< 10 peers), Outdated (no declaration for more than six years).
 - Geneva legal thresholds (3-year average IDC): above 450 MJ/m²/year improvement measures are required; above the "significant" threshold energy renovation is mandatory: 800 MJ/m² until end of 2026, 650 from 2027, 550 from 2031. ThermoGeneva shows these comparisons as indicative only; the cantonal energy office (OCEN) determines obligations.
 - Limits: not an energy audit; does not include process energy; heat-pump buildings report electricity, which lowers their IDC.
