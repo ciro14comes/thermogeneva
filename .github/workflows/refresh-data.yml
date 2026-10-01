@@ -1,0 +1,40 @@
+# ThermoGeneva — aggiornamento automatico dei dati
+# Scarica IDC, zone FTI e confine cantonale dal SITG/swisstopo, li valida e li carica in Supabase,
+# poi ricalcola i benchmark. Gira ogni lunedì e si può lanciare a mano da GitHub (Actions → Run workflow).
+name: Refresh data
+
+on:
+  schedule:
+    - cron: "17 4 * * 1"   # lunedì 04:17 UTC (≈ 06:17 a Ginevra in estate)
+  workflow_dispatch:
+
+concurrency:
+  group: refresh-data
+  cancel-in-progress: false
+
+jobs:
+  etl:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Installa le dipendenze
+        run: pip install -r requirements.txt
+
+      - name: Esegui l'ETL
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: python -m etl.run
+
+      - name: Riepilogo
+        if: always()
+        run: |
+          echo "### ThermoGeneva — refresh dati" >> "$GITHUB_STEP_SUMMARY"
+          echo "Esito: ${{ job.status }} — $(date -u '+%Y-%m-%d %H:%M UTC')" >> "$GITHUB_STEP_SUMMARY"
