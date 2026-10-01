@@ -89,3 +89,10 @@ def fetch_features_geojson(layer_url, fields):
         "returnGeometry": "true", "outSR": config.SRID, "f": "geojson",
     })
     return js["features"]
+
+
+def fetch_canton():
+    """Confine del Canton de Genève in EPSG:2056 (GeoJSON geometry) + nome."""
+    js = _get(config.CANTON_URL, {"geometryFormat": "geojson", "sr": config.SRID})
+    feat = js["feature"]
+    return feat["properties"].get("name", "Genève"), feat["geometry"]

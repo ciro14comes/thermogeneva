@@ -1,0 +1,3 @@
+# generati da scripts/copy-maplibre-worker.mjs
+public/maplibre/
+next-env.d.ts

@@ -42,7 +42,9 @@ def main(dry_run=False):
         z["objectid"] = z["objectid"] or f.get("id")
         z["geom"] = transform.to_ewkt(f.get("geometry"))
         zones.append(z)
-    print(f"    edifici senza geometria: {no_geom} | zone: {len(zones)}")
+    canton_name, canton_geom = fetch.fetch_canton()
+    canton = (canton_name, transform.to_ewkt(canton_geom))
+    print(f"    edifici senza geometria: {no_geom} | zone: {len(zones)} | confine cantonale: {'ok' if canton[1] else 'mancante'}")
 
     if dry_run:
         print(f"Dry-run completato in {time.time() - t0:.0f}s (nessuna scrittura).")
@@ -52,7 +54,7 @@ def main(dry_run=False):
     with load.connect() as conn:
         run_id = load.start_run(conn, "sitg_idc+fti", schema_hash)
         try:
-            loaded = load.load_all(conn, run_id, raw_rows, records, buildings, zones)
+            loaded = load.load_all(conn, run_id, raw_rows, records, buildings, zones, canton)
         except Exception as e:
             conn.rollback()
             load.finish_run(conn, run_id, "failed", len(raw_rows), 0, rejected, str(e)[:500])

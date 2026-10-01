@@ -15,6 +15,10 @@ IDC_LAYER = f"{BASE}/SCANE_INDICE_MOYENNES_3_ANS/FeatureServer/0"
 FTI_LAYER = f"{BASE}/FTI_PERIMETRE/FeatureServer/0"
 SRID = 2056
 
+# Confine cantonale (swisstopo swissBOUNDARIES3D, open data © swisstopo) — 25 = Genève
+CANTON_URL = ("https://api3.geo.admin.ch/rest/services/api/MapServer/"
+              "ch.swisstopo.swissboundaries3d-kanton-flaeche.fill/25")
+
 # Allowlist (Addendum privacy): solo questi campi entrano nel database.
 # Esclusi di proposito: bat_c_adr*_repondant, id_concessionnaire, nbre_preneur.
 IDC_FIELDS = [

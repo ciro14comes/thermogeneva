@@ -39,7 +39,7 @@ def _copy(cur, table, cols, rows):
             cp.write_row([r.get(c) for c in cols])
 
 
-def load_all(conn, run_id, raw_rows, records, buildings, zones):
+def load_all(conn, run_id, raw_rows, records, buildings, zones, canton=None):
     """raw -> core in una transazione: o tutto o niente."""
     with conn.transaction(), conn.cursor() as cur:
         # --- RAW: snapshot attributi IDC (senza geometria) e zone FTI; tiene solo l'ultimo snapshot
@@ -124,6 +124,14 @@ def load_all(conn, run_id, raw_rows, records, buildings, zones):
                 where extensions.ST_Contains(z.geom, extensions.ST_PointOnSurface(b.geom))
                 order by z.zone_id limit 1
             ) pz on true""", {"min": config.MIN_OVERLAP_RATIO})
+
+        # --- CORE: confine cantonale (per la maschera della mappa)
+        if canton and canton[1]:
+            cur.execute("""
+                insert into core.canton_boundary (canton_code, name, geom, updated_at)
+                values ('GE', %s, extensions.ST_Multi(extensions.ST_Force2D(extensions.ST_MakeValid(extensions.ST_GeomFromEWKT(%s)))), now())
+                on conflict (canton_code) do update set name = excluded.name, geom = excluded.geom, updated_at = now()""",
+                canton)
 
         # --- ANALYTICS: ricalcola benchmark e metriche di zona
         cur.execute("select analytics.refresh_all()")
