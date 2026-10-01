@@ -305,9 +305,10 @@ export default function Explorer() {
       paint: { "fill-color": PALETTE.background, "fill-opacity": 0.82 } }, "zones-fill");
     map.addLayer({ id: "canton-line", type: "line", source: "canton",
       paint: { "line-color": PALETTE.textSecondary, "line-width": 1.6, "line-opacity": 0.8 } }, "zones-fill");
-    const pad = 0.06;
-    map.setMaxBounds([[x0 - pad, y0 - pad], [x1 + pad, y1 + pad]]);
-    map.setMinZoom(9.5);
+    // margine attorno al cantone: più ampio a ovest perché la card copre la parte sinistra della mappa
+    const padW = 0.35, padE = 0.15, padNS = 0.1;
+    map.setMaxBounds([[x0 - padW, y0 - padNS], [x1 + padE, y1 + padNS]]);
+    map.setMinZoom(9);
   }, [mapReady, canton]);
 
   /* colore */
