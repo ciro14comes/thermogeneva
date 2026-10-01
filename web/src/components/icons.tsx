@@ -41,3 +41,10 @@ export const IconArrowLeft = ({ size }: P) => (
 export const IconChevron = ({ size }: P) => (
   <svg {...base(size)}><path d="m9 6 6 6-6 6" /></svg>
 );
+
+// Croce svizzera (proporzioni ufficiali: ogni braccio è 1/6 più lungo che largo), piena.
+export const IconSwissCross = ({ size = 14 }: P) => (
+  <svg width={size} height={size} viewBox="6 6 20 20" fill="currentColor" aria-hidden="true">
+    <path d="M13 6h6v7h7v6h-7v7h-6v-7H6v-6h7z" />
+  </svg>
+);

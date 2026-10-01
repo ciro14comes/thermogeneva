@@ -143,6 +143,10 @@ html[data-sidebar="collapsed"] .sidebar { padding: 18px 22px 18px 10px; }
 .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 12px; text-decoration: none; font-weight: 600; font-size: 0.92rem; border: 1px solid var(--line-2); background: var(--surface); color: var(--ink); cursor: pointer; }
 .btn-primary { background: var(--primary); color: #fff; border-color: var(--primary); }
 .btn-ghost { background: var(--surface); }
+/* pulsante "svizzero": rosso bandiera con la croce bianca a destra */
+.btn-swiss { background: #DA291C; color: #fff; border-color: #DA291C; gap: 10px; }
+.btn-swiss:hover { background: #B8221A; border-color: #B8221A; }
+.btn-swiss:focus-visible { outline: 2px solid #DA291C; outline-offset: 2px; }
 .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin: 22px 0 6px; }
 
 .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; }
@@ -291,7 +295,7 @@ table.data a:hover { text-decoration: underline; }
   .main { border-radius: var(--radius); }
   .container { padding: 0 18px; }
   .explore { height: calc(100vh - 90px); }
-  .panel { top: auto; left: 8px; right: 8px; bottom: 8px; width: auto; max-height: 55%; }
+  .panel { top: auto; left: 8px; right: 8px; bottom: 8px; width: auto; max-height: 46%; }
   .list-panel { left: 8px; right: 8px; width: auto; top: 60px; bottom: 8px; }
 }
 

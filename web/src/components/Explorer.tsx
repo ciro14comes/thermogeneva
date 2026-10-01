@@ -6,7 +6,7 @@ import type { Map as MLMap } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { Link } from "@/i18n/navigation";
 import { CLASS_COLOR, PALETTE, classOfBuilding, energyLabel, fmtNum, fmtOrdinal, fmtPct, idcColor, trendColor, type BenchClass } from "@/lib/format";
-import { IconArrowLeft, IconChevron, IconList, IconMap, IconSearch } from "./icons";
+import { IconArrowLeft, IconChevron, IconList, IconMap, IconSearch, IconSwissCross } from "./icons";
 
 /* ---------------- tipi ---------------- */
 type Props = {
@@ -67,6 +67,39 @@ function centroid(g: Geom): [number, number] {
   const n = ring.length || 1;
   return [ring.reduce((s, p) => s + p[0], 0) / n, ring.reduce((s, p) => s + p[1], 0) / n];
 }
+/* Limiti di spostamento della mappa attorno al cantone.
+   MapLibre non lascia uscire lo schermo da maxBounds: se lo schermo è più "alto" del riquadro
+   (telefono in verticale) la mappa resta bloccata e troppo ingrandita. Allarghiamo quindi il riquadro
+   in base alle proporzioni dello schermo, e su telefono aggiungiamo spazio a sud per il pannello. */
+function panBounds(bbox: [number, number, number, number], el: HTMLElement, panel: HTMLElement | null): [[number, number], [number, number]] {
+  const [x0, y0, x1, y1] = bbox;
+  const w = Math.max(el.clientWidth, 1), h = Math.max(el.clientHeight, 1);
+  const mobile = w <= 900;
+  const k = 1 / Math.cos((((y0 + y1) / 2) * Math.PI) / 180); // 1° di latitudine ≈ k × 1° di longitudine sullo schermo
+  // margine base: su desktop più ampio a ovest perché il pannello copre la parte sinistra
+  let west = mobile ? 0.05 : 0.35, east = mobile ? 0.05 : 0.15;
+  let north = mobile ? 0.06 : 0.1, south = mobile ? 0.06 : 0.1;
+  // il riquadro deve avere almeno le proporzioni dello schermo, altrimenti la mappa resta bloccata:
+  // schermo più largo → allarghiamo est/ovest; schermo più alto → allarghiamo nord/sud
+  const boxW = x1 - x0 + west + east;               // larghezza in gradi di longitudine
+  const boxH = (y1 - y0 + north + south) * k;       // altezza convertita in "gradi di longitudine"
+  const ratio = w / h;
+  if (boxW / boxH < ratio) {
+    const extra = (boxH * ratio - boxW) / 2;
+    west += extra; east += extra;
+  } else {
+    const extra = (boxW / ratio - boxH) / 2 / k;
+    north += extra; south += extra;
+  }
+  // su telefono il pannello copre la parte bassa: spazio in più a sud per poterci scorrere sopra
+  if (mobile && panel) south += ((x1 - x0 + west + east) / ratio / k) * Math.min(0.6, panel.offsetHeight / h);
+  return [[x0 - west, y0 - south], [x1 + east, y1 + north]];
+}
+function mobilePadding(el: HTMLElement, panel: HTMLElement | null) {
+  const ph = panel ? panel.offsetHeight : 0;
+  const bottom = Math.min(ph + 16, el.clientHeight * 0.6);
+  return { top: 60, bottom, left: 16, right: 16 };
+}
 function zoneLabel(z: ZoneProps | undefined): string {
   if (!z) return "—";
   return z.zone_name ?? `${z.commune ?? "Zone"} · ${z.zone_type}`;
@@ -104,6 +137,7 @@ export default function Explorer() {
 
   const mapEl = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MLMap | null>(null);
+  const panelEl = useRef<HTMLElement>(null);
   const [data, setData] = useState<MapData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [mapReady, setMapReady] = useState(false);
@@ -210,6 +244,10 @@ export default function Explorer() {
       const popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false, offset: 10 });
 
       map.on("load", () => {
+        // edifici del fondo swisstopo (senza dati IDC, non cliccabili): bianchi con bordo leggero
+        if (map.getLayer("building")) map.setPaintProperty("building", "fill-color", "#FFFFFF");
+        if (map.getLayer("building_casing")) map.setPaintProperty("building_casing", "line-color", "hsl(220, 12%, 78%)");
+
         map.addSource("zones", { type: "geojson", data: data.zones as never });
         map.addSource("buildings", { type: "geojson", data: data.buildings as never, promoteId: "egid" });
         map.addSource("points", { type: "geojson", data: points as never, promoteId: "egid" });
@@ -259,7 +297,7 @@ export default function Explorer() {
           const xs = coords.map((c) => c[0]);
           const ys = coords.map((c) => c[1]);
           map.fitBounds([[Math.min(...xs), Math.min(...ys)], [Math.max(...xs), Math.max(...ys)]],
-            { padding: { top: 60, bottom: 40, right: 60, left: window.innerWidth > 900 ? PANEL_W : 40 }, duration: 0 });
+            { padding: window.innerWidth > 900 ? { top: 60, bottom: 40, right: 60, left: PANEL_W } : mobilePadding(map.getContainer(), panelEl.current), duration: 0 });
         }
 
         let hovered: number | null = null;
@@ -299,7 +337,11 @@ export default function Explorer() {
   /* maschera "fuori Ginevra" + limiti di spostamento */
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !mapReady || !canton || map.getSource("canton-mask")) return;
+    if (!map || !mapReady || !canton) return;
+    // limiti di spostamento calcolati sulla forma dello schermo (anche telefono in verticale)
+    const apply = () => map.setMaxBounds(panBounds(canton.bbox, map.getContainer(), panelEl.current));
+    map.on("resize", apply);
+    if (map.getSource("canton-mask")) { apply(); return () => { map.off("resize", apply); }; }
     const polys = (canton.geometry.type === "MultiPolygon"
       ? (canton.geometry.coordinates as number[][][][])
       : [canton.geometry.coordinates as number[][][]]);
@@ -316,10 +358,13 @@ export default function Explorer() {
       paint: { "fill-color": PALETTE.background, "fill-opacity": 0.82 } }, "zones-fill");
     map.addLayer({ id: "canton-line", type: "line", source: "canton",
       paint: { "line-color": PALETTE.textSecondary, "line-width": 1.6, "line-opacity": 0.8 } }, "zones-fill");
-    // margine attorno al cantone: più ampio a ovest perché la card copre la parte sinistra della mappa
-    const padW = 0.35, padE = 0.15, padNS = 0.1;
-    map.setMaxBounds([[x0 - padW, y0 - padNS], [x1 + padE, y1 + padNS]]);
-    map.setMinZoom(9);
+    apply();
+    map.setMinZoom(8.5);
+    // al primo caricamento su telefono: tutto il cantone visibile sopra il pannello
+    if (map.getContainer().clientWidth <= 900) {
+      map.fitBounds([[x0, y0], [x1, y1]], { padding: mobilePadding(map.getContainer(), panelEl.current), duration: 0 });
+    }
+    return () => { map.off("resize", apply); };
   }, [mapReady, canton]);
 
   /* colore */
@@ -363,7 +408,7 @@ export default function Explorer() {
     const ring = firstRing(z.geometry);
     const xs = ring.map((c) => c[0]), ys = ring.map((c) => c[1]);
     map.fitBounds([[Math.min(...xs), Math.min(...ys)], [Math.max(...xs), Math.max(...ys)]],
-      { padding: { top: 80, bottom: 40, right: 60, left: window.innerWidth > 900 ? PANEL_W : 40 }, duration: 800 });
+      { padding: window.innerWidth > 900 ? { top: 80, bottom: 40, right: 60, left: PANEL_W } : mobilePadding(map.getContainer(), panelEl.current), duration: 800 });
   }, [zoneId, mapReady, data]);
 
   /* selezione: evidenzia + storico */
@@ -412,8 +457,12 @@ export default function Explorer() {
     if (!f) return;
     setSelected(f.properties);
     setQuery("");
-    mapRef.current?.flyTo({ center: centroid(f.geometry), zoom: 16.5, duration: 900,
-      padding: { left: window.innerWidth > 900 ? PANEL_W : 0, top: 0, right: 0, bottom: 0 } });
+    const m = mapRef.current;
+    if (!m) return;
+    m.flyTo({ center: centroid(f.geometry), zoom: 16.5, duration: 900,
+      padding: window.innerWidth > 900
+        ? { left: PANEL_W, top: 0, right: 0, bottom: 0 }
+        : { left: 0, top: 0, right: 0, bottom: mobilePadding(m.getContainer(), panelEl.current).bottom } });
   }
 
   const zoneSel = zoneId === "all" || zoneId === "none" ? undefined : zonesById.get(Number(zoneId));
@@ -433,7 +482,7 @@ export default function Explorer() {
       {error && <div className="map-status">⚠ {error}</div>}
 
       {/* ---------- card metriche, sempre visibile ---------- */}
-      <section className="panel" aria-label={t("title")}>
+      <section ref={panelEl} className="panel" aria-label={t("title")}>
         {!selected ? (
           <>
             <header className="panel-head">
@@ -652,7 +701,7 @@ export default function Explorer() {
               </span>
             )}
             <div className="btn-row">
-              <Link href={`/buildings/${b.egid}`} className="btn btn-primary">{t("fullAnalysis")}</Link>
+              <Link href={`/buildings/${b.egid}`} className="btn btn-swiss">{t("fullAnalysis")} <IconSwissCross size={13} /></Link>
             </div>
           </div>
         </div>

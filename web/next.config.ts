@@ -6,7 +6,8 @@ import createNextIntlPlugin from "next-intl/plugin";
 // il database Supabase viene interrogato solo dal server.
 const CSP = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline'",              // Next.js inserisce piccoli script inline
+  // Next.js inserisce piccoli script inline; 'unsafe-eval' solo in sviluppo locale (React lo usa per il debug)
+  `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === "production" ? "" : " 'unsafe-eval'"}`,
   "style-src 'self' 'unsafe-inline'",               // stili inline di React e MapLibre
   "img-src 'self' data: blob: https://*.geo.admin.ch",
   "font-src 'self' data:",
