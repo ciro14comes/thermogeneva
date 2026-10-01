@@ -11,6 +11,7 @@ export const SOURCES = {
   thresholds: "https://www.ge.ch/connaitre-consommation-energie-batiment-idc/que-faire-resultat-idc-votre-immeuble",
   idcInfo: "https://www.ge.ch/connaitre-consommation-energie-batiment-idc/proprietaires-immeubles",
   swisstopo: "https://www.swisstopo.admin.ch/",
+  fti: "https://www.ftige.ch/ecoparcs/",
 };
 
 const OG_LOCALE: Record<string, string> = { en: "en_CH", fr: "fr_CH" };

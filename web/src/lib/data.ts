@@ -89,7 +89,7 @@ export type ZoneMetric = {
 };
 
 // Cambiare DATA_VERSION invalida la cache di Next.js dopo modifiche alla struttura delle viste.
-const DATA_VERSION = "3";
+const DATA_VERSION = "4";
 
 async function rest<T>(path: string): Promise<T> {
   if (!SUPABASE_URL || !SUPABASE_KEY) {
@@ -97,14 +97,29 @@ async function rest<T>(path: string): Promise<T> {
       "Mancano NEXT_PUBLIC_SUPABASE_URL o NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY (.env.local / Vercel)",
     );
   }
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
-    headers: { apikey: SUPABASE_KEY, Accept: "application/json", "x-thermogeneva-data": DATA_VERSION },
-    next: { revalidate: REVALIDATE_SECONDS },
-  });
-  if (!res.ok) {
-    throw new Error(`Supabase ${res.status} su ${path}: ${await res.text()}`);
+  // Il database gratuito può rallentare quando il build genera molte pagine in parallelo:
+  // in caso di errore temporaneo (5xx, timeout, rete) riprova fino a 3 volte con attese crescenti.
+  const RETRY_WAIT_MS = [500, 1500, 3500];
+  for (let attempt = 0; ; attempt++) {
+    let res: Response;
+    try {
+      res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+        headers: { apikey: SUPABASE_KEY, Accept: "application/json", "x-thermogeneva-data": DATA_VERSION },
+        next: { revalidate: REVALIDATE_SECONDS },
+      });
+    } catch (err) {
+      if (attempt < RETRY_WAIT_MS.length) { await sleep(RETRY_WAIT_MS[attempt]); continue; }
+      throw err;
+    }
+    if (res.ok) return (await res.json()) as T;
+    const body = await res.text();
+    if (res.status >= 500 && attempt < RETRY_WAIT_MS.length) { await sleep(RETRY_WAIT_MS[attempt]); continue; }
+    throw new Error(`Supabase ${res.status} su ${path}: ${body}`);
   }
-  return (await res.json()) as T;
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((r) => setTimeout(r, ms));
 }
 
 // PostgREST restituisce i numeric come stringhe: li convertiamo in numeri (solo i campi numerici).
@@ -149,6 +164,11 @@ export async function getZones(): Promise<Zone[]> {
 
 export async function getZone(slug: string): Promise<Zone | null> {
   const rows = await rest<Zone[]>(`zones?slug=eq.${encodeURIComponent(slug)}&limit=1`);
+  return rows[0] ? num(rows[0]) : null;
+}
+
+export async function getZoneById(zoneId: number): Promise<Zone | null> {
+  const rows = await rest<Zone[]>(`zones?zone_id=eq.${zoneId}&limit=1`);
   return rows[0] ? num(rows[0]) : null;
 }
 

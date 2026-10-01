@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
-import { getBuildingsInZone, getZone, getZoneMetrics, referenceYear, zoneLabel } from "@/lib/data";
+import { getBuildingsInZone, getZone, getZoneById, getZoneMetrics, referenceYear, zoneLabel } from "@/lib/data";
 import { fmtNum, fmtOrdinal, fmtPct, percentileColor, trendColor } from "@/lib/format";
 import JsonLd from "@/components/JsonLd";
 import { breadcrumbLd, pageMeta } from "@/lib/seo";
@@ -40,7 +40,14 @@ export default async function ZonePage({ params }: Params) {
   const tn = await getTranslations("nav");
 
   const zone = await getZone(slug);
-  if (!zone) notFound();
+  if (!zone) {
+    // vecchi indirizzi numerici (/zones/49) → nuovo indirizzo con il nome ufficiale (/zones/zimeysa)
+    if (/^\d+$/.test(slug)) {
+      const byId = await getZoneById(Number(slug));
+      if (byId && byId.slug !== slug) permanentRedirect(`/${locale}/zones/${byId.slug}`);
+    }
+    notFound();
+  }
   const [buildings, metrics, allMetrics] = await Promise.all([
     getBuildingsInZone(zone.zone_id),
     getZoneMetrics(zone.zone_id),

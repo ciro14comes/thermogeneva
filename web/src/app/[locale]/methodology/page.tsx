@@ -54,6 +54,7 @@ const EN = (
       <li><a href={SOURCES.idcInfo}>État de Genève — Knowing a building&apos;s energy consumption (IDC)</a></li>
       <li><a href={SOURCES.thresholds}>État de Genève — What to do depending on your building&apos;s IDC (thresholds)</a></li>
       <li><a href={SOURCES.idc}>SITG — IDC dataset (2- and 3-year averages)</a></li>
+      <li><a href={SOURCES.fti}>FTI — Official names of the industrial zones (map of the Fondation pour les terrains industriels de Genève)</a></li>
     </ul>
   </>
 );
@@ -101,6 +102,7 @@ const FR = (
       <li><a href={SOURCES.idcInfo}>État de Genève — Connaître la consommation d&apos;énergie d&apos;un bâtiment (IDC)</a></li>
       <li><a href={SOURCES.thresholds}>État de Genève — Que faire selon le résultat IDC de votre immeuble (seuils)</a></li>
       <li><a href={SOURCES.idc}>SITG — Jeu de données IDC (moyennes 2 et 3 ans)</a></li>
+      <li><a href={SOURCES.fti}>FTI — Noms officiels des zones industrielles (carte de la Fondation pour les terrains industriels de Genève)</a></li>
     </ul>
   </>
 );
@@ -123,7 +125,7 @@ export default async function MethodologyPage({ params }: P) {
           inLanguage: locale,
           url: absolute(`/${locale}/methodology`),
           author: { "@type": "Person", name: AUTHOR },
-          citation: [SOURCES.idcInfo, SOURCES.thresholds, SOURCES.idc],
+          citation: [SOURCES.idcInfo, SOURCES.thresholds, SOURCES.idc, SOURCES.fti],
           about: [
             { "@type": "Thing", name: locale === "fr" ? "Indice de dépense de chaleur (IDC)" : "Heat consumption index (IDC)" },
             { "@type": "Place", name: "Canton of Geneva" },

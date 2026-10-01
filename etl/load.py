@@ -56,7 +56,7 @@ def load_all(conn, run_id, raw_rows, records, buildings, zones, canton=None):
         _copy(cur, "raw.fti_zones", config.FTI_FIELDS + ["geom", "snapshot_id"],
               [{**z, "snapshot_id": run_id} for z in zones])
 
-        # --- CORE: zone (conserva zone_name/slug inseriti a mano)
+        # --- CORE: zone (zone_name/slug li calcola core.apply_zone_labels() più sotto)
         cur.execute("""
             insert into core.industrial_zones (zone_id, zone_type, surface_m2, geom, updated_at)
             select objectid, coalesce(n_zone, 'n/a'), surf_zone,
@@ -132,6 +132,9 @@ def load_all(conn, run_id, raw_rows, records, buildings, zones, canton=None):
                 values ('GE', %s, extensions.ST_Multi(extensions.ST_Force2D(extensions.ST_MakeValid(extensions.ST_GeomFromEWKT(%s)))), now())
                 on conflict (canton_code) do update set name = excluded.name, geom = excluded.geom, updated_at = now()""",
                 canton)
+
+        # --- CORE: nomi ufficiali FTI delle zone (assegnati per posizione, vedi migrazione 009)
+        cur.execute("select core.apply_zone_labels()")
 
         # --- ANALYTICS: ricalcola benchmark e metriche di zona
         cur.execute("select analytics.refresh_all()")
