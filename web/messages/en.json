@@ -89,7 +89,14 @@
     "outsideFti": "Outside FTI zones",
     "classOld": "Outdated",
     "classOldSub": "before {year}",
-    "staleNote": "Outdated data: the last IDC declaration for this building dates from {year}. It is shown for reference but excluded from statistics."
+    "staleNote": "Outdated data: the last IDC declaration for this building dates from {year}. It is shown for reference but excluded from statistics.",
+    "moreFilters": "More filters",
+    "resetFilters": "Reset",
+    "fCommune": "Commune",
+    "fEnergy": "Energy source",
+    "fIdc": "IDC (MJ/m²)",
+    "fSre": "Heated area",
+    "fAll": "All"
   },
   "building": {
     "egid": "EGID",
@@ -142,7 +149,9 @@
     "cardThreshold450": "3-year average above 450 MJ/m²: improvement measures required",
     "cardBelow450": "3-year average below 450 MJ/m²",
     "dataUpTo": "data up to {year}",
-    "percentileExplainYear": "In {year}, higher IDC than {p} % of similar buildings."
+    "percentileExplainYear": "In {year}, higher IDC than {p} % of similar buildings.",
+    "viewOnMap": "View on map",
+    "mapLabel": "Map showing the outline of {address}"
   },
   "zones": {
     "title": "Geneva industrial zones: heat consumption (IDC) by zone",
@@ -162,7 +171,15 @@
     "noData": "No building with IDC data in this zone.",
     "unnamedNote": "The official FTI layer does not publish zone names; zones are labelled by main municipality and zone type.",
     "h1Zone": "{zone} industrial zone: building heat consumption (IDC)",
-    "zoneSummary": "In {year}, the {n} buildings with an IDC in the {zone} industrial zone ({type}, {commune}) had a median IDC of {median} MJ/m² per year (25th–75th percentile: {p25}–{p75}). {above} of them have a 3-year average above 450 MJ/m², and {share} % have a higher IDC than the median of similar buildings in the canton."
+    "zoneSummary": "In {year}, the {n} buildings with an IDC in the {zone} industrial zone ({type}, {commune}) had a median IDC of {median} MJ/m² per year (25th–75th percentile: {p25}–{p75}). {above} of them have a 3-year average above 450 MJ/m², and {share} % have a higher IDC than the median of similar buildings in the canton.",
+    "mixTitle": "Energy sources",
+    "mixBuildings": "Buildings",
+    "mixEnergy": "Share of energy",
+    "mixNote": "Main energy source declared by the {n} buildings with up-to-date data. Share of energy = share of the zone's estimated thermal energy.",
+    "coverageTitle": "Data coverage",
+    "coverageText": "{fresh} of {total} buildings in this zone have declared an IDC in the last six years.",
+    "coverageYear": "{n} have already declared for {year} or later.",
+    "coverageNote": "Buildings without a recent declaration are shown as outdated and left out of medians and statistics."
   },
   "families": {
     "industria": "Industrial",
@@ -299,5 +316,14 @@
     "energyColDiff": "Compared with the peer median level",
     "atMedian": "at median",
     "energyNote": "Left: estimated heat used per year (IDC × heated area ÷ 3,600). Right: how much more (red) or less (green) the building uses than it would at the median IDC of similar buildings, with the same floor area."
+  },
+  "energyGroups": {
+    "gas": "Gas",
+    "oil": "Heating oil",
+    "district": "District heating",
+    "heatpump": "Heat pump",
+    "electric": "Direct electric",
+    "wood": "Wood",
+    "other": "Other / not stated"
   }
 }

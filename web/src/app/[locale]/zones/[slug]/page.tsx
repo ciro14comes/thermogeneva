@@ -3,7 +3,7 @@ import { notFound, permanentRedirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { getBuildingsInZone, getZone, getZoneById, getZoneMetrics, referenceYear, zoneLabel } from "@/lib/data";
-import { fmtNum, fmtOrdinal, fmtPct, percentileColor, trendColor } from "@/lib/format";
+import { ENERGY_GROUPS, ENERGY_GROUP_COLOR, energyGroup, fmtNum, fmtOrdinal, fmtPct, percentileColor, trendColor, type EnergyGroup } from "@/lib/format";
 import JsonLd from "@/components/JsonLd";
 import { breadcrumbLd, pageMeta } from "@/lib/seo";
 
@@ -38,6 +38,7 @@ export default async function ZonePage({ params }: Params) {
   const tb = await getTranslations("building");
   const tf = await getTranslations("families");
   const tn = await getTranslations("nav");
+  const te = await getTranslations("energyGroups");
 
   const zone = await getZone(slug);
   if (!zone) {
@@ -56,6 +57,16 @@ export default async function ZonePage({ params }: Params) {
   const year = referenceYear(allMetrics);
   const current = metrics.find((m) => m.year === year) ?? metrics[metrics.length - 1];
   const series = metrics.filter((m) => m.year >= 2011 && m.median_idc != null);
+
+  // mix delle fonti di energia (solo edifici con dati aggiornati) e copertura dei dati
+  const fresh = buildings.filter((b) => !b.is_stale);
+  const mix = ENERGY_GROUPS.map((g) => {
+    const inG = fresh.filter((b) => (energyGroup(b.energy_source) ?? "other") === g);
+    return { g: g as EnergyGroup, n: inG.length, mwh: inG.reduce((s, b) => s + (b.final_energy_mwh ?? 0), 0) };
+  }).filter((m) => m.n > 0).sort((a, b) => b.n - a.n);
+  const totalMwh = mix.reduce((s, m) => s + m.mwh, 0);
+  const coveragePct = buildings.length ? Math.round((100 * fresh.length) / buildings.length) : null;
+  const declaredRef = year != null ? buildings.filter((b) => b.year >= year).length : null;
 
   // mini grafico a barre della mediana di zona nel tempo
   const maxMed = Math.max(450, ...series.map((m) => m.median_idc ?? 0));
@@ -100,6 +111,46 @@ export default async function ZonePage({ params }: Params) {
         </div>
       ) : (
         <p className="muted section">{t("noData")}</p>
+      )}
+
+      {buildings.length > 0 && (
+        <div className="grid grid-2 section">
+          <div className="card">
+            <h2>{t("mixTitle")}</h2>
+            {fresh.length > 0 ? (
+              <>
+                <div className="mix-bar" role="img" aria-label={t("mixTitle")}>
+                  {mix.map((m) => (
+                    <div key={m.g} style={{ width: `${(100 * m.n) / fresh.length}%`, background: ENERGY_GROUP_COLOR[m.g] }} title={`${te(m.g)}: ${m.n}`} />
+                  ))}
+                </div>
+                <table className="mix-table">
+                  <thead><tr><th /><th className="r">{t("mixBuildings")}</th><th className="r">{t("mixEnergy")}</th></tr></thead>
+                  <tbody>
+                    {mix.map((m) => (
+                      <tr key={m.g}>
+                        <td><span className="mix-dot" style={{ background: ENERGY_GROUP_COLOR[m.g] }} />{te(m.g)}</td>
+                        <td className="r num">{m.n} <span className="muted">({Math.round((100 * m.n) / fresh.length)} %)</span></td>
+                        <td className="r num">{totalMwh > 0 ? `${Math.round((100 * m.mwh) / totalMwh)} %` : "—"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <p className="note">{t("mixNote", { n: fresh.length })}</p>
+              </>
+            ) : (
+              <p className="muted">{t("noData")}</p>
+            )}
+          </div>
+          <div className="card">
+            <h2>{t("coverageTitle")}</h2>
+            <div className="stat-value">{coveragePct ?? "—"}<small style={{ fontSize: "0.5em", marginLeft: 2 }}>%</small></div>
+            <div className="cov-track"><div style={{ width: `${coveragePct ?? 0}%` }} /></div>
+            <p style={{ marginBottom: 6 }}>{t("coverageText", { fresh: fresh.length, total: buildings.length })}</p>
+            {declaredRef != null && year != null && <p className="small muted" style={{ margin: 0 }}>{t("coverageYear", { n: declaredRef, year })}</p>}
+            <p className="note">{t("coverageNote")}</p>
+          </div>
+        </div>
       )}
 
       {series.length > 1 && (

@@ -89,7 +89,14 @@
     "outsideFti": "Hors zones FTI",
     "classOld": "Non actualisé",
     "classOldSub": "avant {year}",
-    "staleNote": "Donnée non actualisée : la dernière déclaration d'IDC de ce bâtiment date de {year}. Elle est affichée à titre indicatif mais exclue des statistiques."
+    "staleNote": "Donnée non actualisée : la dernière déclaration d'IDC de ce bâtiment date de {year}. Elle est affichée à titre indicatif mais exclue des statistiques.",
+    "moreFilters": "Plus de filtres",
+    "resetFilters": "Réinitialiser",
+    "fCommune": "Commune",
+    "fEnergy": "Agent énergétique",
+    "fIdc": "IDC (MJ/m²)",
+    "fSre": "Surface chauffée",
+    "fAll": "Tous"
   },
   "building": {
     "egid": "EGID",
@@ -142,7 +149,9 @@
     "cardThreshold450": "Moyenne sur 3 ans au-dessus de 450 MJ/m² : mesures d'amélioration exigées",
     "cardBelow450": "Moyenne sur 3 ans en dessous de 450 MJ/m²",
     "dataUpTo": "données jusqu'en {year}",
-    "percentileExplainYear": "En {year}, IDC plus élevé que {p} % des bâtiments similaires."
+    "percentileExplainYear": "En {year}, IDC plus élevé que {p} % des bâtiments similaires.",
+    "viewOnMap": "Voir sur la carte",
+    "mapLabel": "Carte montrant le contour de {address}"
   },
   "zones": {
     "title": "Zones industrielles de Genève : consommation de chaleur (IDC) par zone",
@@ -162,7 +171,15 @@
     "noData": "Aucun bâtiment avec IDC dans cette zone.",
     "unnamedNote": "La couche officielle FTI ne publie pas de noms de zones ; elles sont désignées par la commune principale et le type de zone.",
     "h1Zone": "Zone industrielle {zone} : consommation de chaleur (IDC) des bâtiments",
-    "zoneSummary": "En {year}, les {n} bâtiments disposant d'un IDC dans la zone industrielle {zone} ({type}, {commune}) affichaient un IDC médian de {median} MJ/m² par an (25e–75e percentile : {p25}–{p75}). {above} d'entre eux ont une moyenne sur 3 ans supérieure à 450 MJ/m², et {share} % ont un IDC plus élevé que la médiane des bâtiments similaires du canton."
+    "zoneSummary": "En {year}, les {n} bâtiments disposant d'un IDC dans la zone industrielle {zone} ({type}, {commune}) affichaient un IDC médian de {median} MJ/m² par an (25e–75e percentile : {p25}–{p75}). {above} d'entre eux ont une moyenne sur 3 ans supérieure à 450 MJ/m², et {share} % ont un IDC plus élevé que la médiane des bâtiments similaires du canton.",
+    "mixTitle": "Agents énergétiques",
+    "mixBuildings": "Bâtiments",
+    "mixEnergy": "Part de l’énergie",
+    "mixNote": "Agent énergétique principal déclaré par les {n} bâtiments aux données à jour. Part de l’énergie = part de l’énergie thermique estimée de la zone.",
+    "coverageTitle": "Couverture des données",
+    "coverageText": "{fresh} des {total} bâtiments de cette zone ont déclaré un IDC au cours des six dernières années.",
+    "coverageYear": "{n} ont déjà déclaré pour {year} ou plus tard.",
+    "coverageNote": "Les bâtiments sans déclaration récente sont affichés comme non à jour et exclus des médianes et statistiques."
   },
   "families": {
     "industria": "Industrie",
@@ -299,5 +316,14 @@
     "energyColDiff": "Par rapport au niveau médian du groupe",
     "atMedian": "à la médiane",
     "energyNote": "À gauche : chaleur estimée utilisée par an (IDC × surface chauffée ÷ 3 600). À droite : combien le bâtiment consomme de plus (rouge) ou de moins (vert) qu'au niveau de l'IDC médian des bâtiments similaires, à surface égale."
+  },
+  "energyGroups": {
+    "gas": "Gaz",
+    "oil": "Mazout",
+    "district": "Chauffage à distance",
+    "heatpump": "Pompe à chaleur",
+    "electric": "Électricité directe",
+    "wood": "Bois",
+    "other": "Autre / non indiqué"
   }
 }

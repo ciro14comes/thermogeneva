@@ -5,7 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import type { Map as MLMap } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { Link } from "@/i18n/navigation";
-import { CLASS_COLOR, COMPARE_LETTERS, PALETTE, classOfBuilding, energyLabel, fmtNum, fmtOrdinal, fmtPct, idcColor, trendColor, type BenchClass } from "@/lib/format";
+import { CLASS_COLOR, COMPARE_LETTERS, ENERGY_GROUPS, IDC_RANGES, PALETTE, SRE_RANGES, classOfBuilding, energyGroup, energyLabel, fmtNum, fmtOrdinal, fmtPct, idcColor, trendColor, type BenchClass } from "@/lib/format";
 import { IconArrowLeft, IconChevron, IconList, IconMap, IconSearch, IconSwissCross } from "./icons";
 
 /* ---------------- tipi ---------------- */
@@ -29,6 +29,7 @@ type Props = {
   trend_3y_pct: number | null;
   is_stale: boolean;
   commune?: string | null;
+  energy_group?: string | null;   // calcolato nel browser da energy_source (gas, oil, district…)
 };
 type ZoneProps = { zone_id: number; zone_type: string; zone_name: string | null; slug: string; commune: string | null };
 type Geom = { type: string; coordinates: number[][][][] | number[][][] };
@@ -119,6 +120,7 @@ function normalize(p: Props): Props {
     above_significant_until_2026: p.above_significant_until_2026 === true || (p.above_significant_until_2026 as unknown) === "true",
     above_significant_from_2027: p.above_significant_from_2027 === true || (p.above_significant_from_2027 as unknown) === "true",
     is_stale: p.is_stale === true || (p.is_stale as unknown) === "true",
+    energy_group: energyGroup(p.energy_source),
     zone_id: p.zone_id === null || p.zone_id === undefined || (p.zone_id as unknown) === "null" ? (null as unknown as number) : Number(p.zone_id),
   };
 }
@@ -135,6 +137,7 @@ export default function Explorer() {
   const tb = useTranslations("building");
   const tf = useTranslations("families");
   const tc = useTranslations("compare");
+  const te = useTranslations("energyGroups");
   const locale = useLocale();
 
   const mapEl = useRef<HTMLDivElement>(null);
@@ -164,10 +167,24 @@ export default function Explorer() {
   const toggleCompare = (egid: number) =>
     setCompare((cur) => (cur.includes(egid) ? cur.filter((x) => x !== egid) : cur.length >= MAX_COMPARE ? cur : [...cur, egid]));
   const [history, setHistory] = useState<HistoryPoint[] | null>(null);
+  // edificio da aprire subito se l'indirizzo contiene ?building=EGID
+  const pendingSelect = useRef<number | null>(null);
+  useEffect(() => {
+    const raw = new URLSearchParams(window.location.search).get("building");
+    if (raw && /^\d{1,10}$/.test(raw)) pendingSelect.current = Number(raw);
+  }, []);
   const [colorMode, setColorMode] = useState<ColorMode>("class");
   const [family, setFamily] = useState("all");
   const [zoneId, setZoneId] = useState("all");
   const [classFilter, setClassFilter] = useState<BenchClass | null>(null);
+  // filtri aggiuntivi ("Altri filtri")
+  const [commune, setCommune] = useState("all");
+  const [energy, setEnergy] = useState("all");
+  const [idcRange, setIdcRange] = useState("all");
+  const [sreRange, setSreRange] = useState("all");
+  const [moreOpen, setMoreOpen] = useState(false);
+  const extraCount = [commune, energy, idcRange, sreRange].filter((v) => v !== "all").length;
+  const resetExtra = () => { setCommune("all"); setEnergy("all"); setIdcRange("all"); setSreRange("all"); };
   const [query, setQuery] = useState("");
   const [view, setView] = useState<View>("map");
   const [canton, setCanton] = useState<{ geometry: Geom; bbox: [number, number, number, number] } | null>(null);
@@ -209,8 +226,18 @@ export default function Explorer() {
     if (!data) return [];
     return data.buildings.features
       .map((f) => f.properties)
-      .filter((p) => (family === "all" || p.family === family) && (zoneId === "all" || (zoneId === "none" ? p.zone_id == null : p.zone_id === Number(zoneId))));
-  }, [data, family, zoneId]);
+      .filter((p) => {
+        if (family !== "all" && p.family !== family) return false;
+        if (zoneId !== "all" && !(zoneId === "none" ? p.zone_id == null : p.zone_id === Number(zoneId))) return false;
+        if (commune !== "all" && p.commune !== commune) return false;
+        if (energy !== "all" && p.energy_group !== energy) return false;
+        const ir = IDC_RANGES.find((r) => r.key === idcRange);
+        if (ir && !(p.idc >= ir.min && p.idc < ir.max)) return false;
+        const sr = SRE_RANGES.find((r) => r.key === sreRange);
+        if (sr && !(p.sre != null && p.sre >= sr.min && p.sre < sr.max)) return false;
+        return true;
+      });
+  }, [data, family, zoneId, commune, energy, idcRange, sreRange]);
 
   const shown = useMemo(
     () => (classFilter ? visible.filter((p) => classOfBuilding(p.peer_percentile, p.is_stale) === classFilter) : visible),
@@ -240,9 +267,13 @@ export default function Explorer() {
     return { bins, max: Math.max(1, ...bins.map((b) => b.n)) };
   }, [shown]);
 
-  /* ---------- mappa ---------- */
+  /* ---------- mappa ----------
+     La mappa di base (stile swisstopo, tile) parte subito, in parallelo al download dei dati:
+     quando entrambi sono pronti si aggiungono zone ed edifici. */
+  const [styleLoaded, setStyleLoaded] = useState(false);
+  const popupRef = useRef<import("maplibre-gl").Popup | null>(null);
   useEffect(() => {
-    if (!data || !points || !mapEl.current || mapRef.current) return;
+    if (!mapEl.current || mapRef.current) return;
     let cancelled = false;
 
     (async () => {
@@ -261,98 +292,116 @@ export default function Explorer() {
       });
       map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "bottom-right");
       mapRef.current = map;
-      const popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false, offset: 10 });
-
+      popupRef.current = new maplibregl.Popup({ closeButton: false, closeOnClick: false, offset: 10 });
       map.on("load", () => {
         // edifici del fondo swisstopo (senza dati IDC, non cliccabili): bianchi con bordo leggero
         if (map.getLayer("building")) map.setPaintProperty("building", "fill-color", "#FFFFFF");
         if (map.getLayer("building_casing")) map.setPaintProperty("building_casing", "line-color", "hsl(220, 12%, 78%)");
-
-        map.addSource("zones", { type: "geojson", data: data.zones as never });
-        map.addSource("buildings", { type: "geojson", data: data.buildings as never, promoteId: "egid" });
-        map.addSource("points", { type: "geojson", data: points as never, promoteId: "egid" });
-
-        map.addLayer({ id: "zones-fill", type: "fill", source: "zones",
-          paint: { "fill-color": PALETTE.primary, "fill-opacity": 0.05 } });
-        map.addLayer({ id: "zones-line", type: "line", source: "zones",
-          paint: { "line-color": PALETTE.primary, "line-width": 1.3, "line-opacity": 0.5, "line-dasharray": [3, 2] } });
-
-        // poligoni dal livello di quartiere in su
-        // colore pieno solo sull'edificio selezionato; gli altri restano tenui (hover = intermedio)
-        map.addLayer({ id: "buildings-fill", type: "fill", source: "buildings", minzoom: 14.5,
-          paint: {
-            "fill-color": CLASS_EXPR as never,
-            "fill-opacity": ["case",
-              ["boolean", ["feature-state", "selected"], false], 0.95,
-              ["boolean", ["feature-state", "hover"], false], 0.6,
-              0.3] as never,
-          } });
-        map.addLayer({ id: "buildings-line", type: "line", source: "buildings", minzoom: 14.5,
-          paint: {
-            "line-color": ["case", ["boolean", ["feature-state", "selected"], false], PALETTE.text, CLASS_EXPR] as never,
-            "line-width": ["case", ["boolean", ["feature-state", "selected"], false], 2.5, 1] as never,
-            "line-opacity": ["case", ["boolean", ["feature-state", "selected"], false], 1, 0.7] as never,
-          } });
-
-        // punti "glow" a zoom bassi (come nel riferimento)
-        map.addLayer({ id: "points-glow", type: "circle", source: "points", maxzoom: 15,
-          paint: {
-            "circle-color": CLASS_EXPR as never,
-            "circle-radius": ["interpolate", ["linear"], ["zoom"], 10, 6, 14, 13] as never,
-            "circle-opacity": ["interpolate", ["linear"], ["zoom"], 14, 0.28, 15, 0] as never,
-            "circle-blur": 0.6,
-          } });
-        map.addLayer({ id: "points", type: "circle", source: "points", maxzoom: 15,
-          paint: {
-            "circle-color": CLASS_EXPR as never,
-            "circle-radius": ["interpolate", ["linear"], ["zoom"], 10, 3, 14, 6.5] as never,
-            "circle-stroke-color": "#ffffff",
-            "circle-stroke-width": ["case", ["boolean", ["feature-state", "selected"], false], 3, 1.5] as never,
-            "circle-opacity": ["interpolate", ["linear"], ["zoom"], 14, 1, 15, 0] as never,
-            "circle-stroke-opacity": ["interpolate", ["linear"], ["zoom"], 14, 1, 15, 0] as never,
-          } });
-
-        const coords = data.zones.features.flatMap((f) => firstRing(f.geometry));
-        if (coords.length) {
-          const xs = coords.map((c) => c[0]);
-          const ys = coords.map((c) => c[1]);
-          map.fitBounds([[Math.min(...xs), Math.min(...ys)], [Math.max(...xs), Math.max(...ys)]],
-            { padding: window.innerWidth > 900 ? { top: 60, bottom: 40, right: 60, left: PANEL_W } : mobilePadding(map.getContainer(), panelEl.current), duration: 0 });
-        }
-
-        let hovered: number | null = null;
-        const setHover = (id: number | null) => {
-          if (hovered !== null) map.setFeatureState({ source: "buildings", id: hovered }, { hover: false });
-          hovered = id;
-          if (id !== null) map.setFeatureState({ source: "buildings", id }, { hover: true });
-        };
-        map.on("mouseleave", "buildings-fill", () => setHover(null));
-
-        for (const layer of ["buildings-fill", "points"]) {
-          map.on("mousemove", layer, (e) => {
-            map.getCanvas().style.cursor = "pointer";
-            const p = e.features?.[0]?.properties as Props | undefined;
-            if (!p) return;
-            if (layer === "buildings-fill") setHover(Number(p.egid));
-            popup.setLngLat(e.lngLat)
-              .setHTML(`<strong>${p.address ?? "EGID " + p.egid}</strong><br/>IDC ${fmtNum(Number(p.idc), locale)}` +
-                (p.peer_median != null && String(p.peer_median) !== "null"
-                  ? ` · ${tb("peerMedian")} ${fmtNum(Number(p.peer_median), locale)}` : ""))
-              .addTo(map);
-          });
-          map.on("mouseleave", layer, () => { map.getCanvas().style.cursor = ""; popup.remove(); });
-          map.on("click", layer, (e) => {
-            const p = e.features?.[0]?.properties as Props | undefined;
-            if (p) setSelected(normalize(p));
-          });
-        }
-        setMapReady(true);
+        setStyleLoaded(true);
       });
     })();
 
     return () => { cancelled = true; mapRef.current?.remove(); mapRef.current = null; };
+  }, []);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    const popup = popupRef.current;
+    if (!map || !popup || !styleLoaded || !data || !points || map.getSource("buildings")) return;
+
+    map.addSource("zones", { type: "geojson", data: data.zones as never });
+    map.addSource("buildings", { type: "geojson", data: data.buildings as never, promoteId: "egid" });
+    map.addSource("points", { type: "geojson", data: points as never, promoteId: "egid" });
+
+    map.addLayer({ id: "zones-fill", type: "fill", source: "zones",
+      paint: { "fill-color": PALETTE.primary, "fill-opacity": 0.05 } });
+    map.addLayer({ id: "zones-line", type: "line", source: "zones",
+      paint: { "line-color": PALETTE.primary, "line-width": 1.3, "line-opacity": 0.5, "line-dasharray": [3, 2] } });
+
+    // poligoni dal livello di quartiere in su
+    // colore pieno solo sull'edificio selezionato; gli altri restano tenui (hover = intermedio)
+    map.addLayer({ id: "buildings-fill", type: "fill", source: "buildings", minzoom: 14.5,
+      paint: {
+        "fill-color": CLASS_EXPR as never,
+        "fill-opacity": ["case",
+          ["boolean", ["feature-state", "selected"], false], 0.95,
+          ["boolean", ["feature-state", "hover"], false], 0.6,
+          0.3] as never,
+      } });
+    map.addLayer({ id: "buildings-line", type: "line", source: "buildings", minzoom: 14.5,
+      paint: {
+        "line-color": ["case", ["boolean", ["feature-state", "selected"], false], PALETTE.text, CLASS_EXPR] as never,
+        "line-width": ["case", ["boolean", ["feature-state", "selected"], false], 2.5, 1] as never,
+        "line-opacity": ["case", ["boolean", ["feature-state", "selected"], false], 1, 0.7] as never,
+      } });
+
+    // punti "glow" a zoom bassi (come nel riferimento)
+    map.addLayer({ id: "points-glow", type: "circle", source: "points", maxzoom: 15,
+      paint: {
+        "circle-color": CLASS_EXPR as never,
+        "circle-radius": ["interpolate", ["linear"], ["zoom"], 10, 6, 14, 13] as never,
+        "circle-opacity": ["interpolate", ["linear"], ["zoom"], 14, 0.28, 15, 0] as never,
+        "circle-blur": 0.6,
+      } });
+    map.addLayer({ id: "points", type: "circle", source: "points", maxzoom: 15,
+      paint: {
+        "circle-color": CLASS_EXPR as never,
+        "circle-radius": ["interpolate", ["linear"], ["zoom"], 10, 3, 14, 6.5] as never,
+        "circle-stroke-color": "#ffffff",
+        "circle-stroke-width": ["case", ["boolean", ["feature-state", "selected"], false], 3, 1.5] as never,
+        "circle-opacity": ["interpolate", ["linear"], ["zoom"], 14, 1, 15, 0] as never,
+        "circle-stroke-opacity": ["interpolate", ["linear"], ["zoom"], 14, 1, 15, 0] as never,
+      } });
+
+    const coords = data.zones.features.flatMap((f) => firstRing(f.geometry));
+    if (coords.length && !pendingSelect.current) {
+      const xs = coords.map((c) => c[0]);
+      const ys = coords.map((c) => c[1]);
+      map.fitBounds([[Math.min(...xs), Math.min(...ys)], [Math.max(...xs), Math.max(...ys)]],
+        { padding: window.innerWidth > 900 ? { top: 60, bottom: 40, right: 60, left: PANEL_W } : mobilePadding(map.getContainer(), panelEl.current), duration: 0 });
+    }
+
+    let hovered: number | null = null;
+    const setHover = (id: number | null) => {
+      if (hovered !== null) map.setFeatureState({ source: "buildings", id: hovered }, { hover: false });
+      hovered = id;
+      if (id !== null) map.setFeatureState({ source: "buildings", id }, { hover: true });
+    };
+    map.on("mouseleave", "buildings-fill", () => setHover(null));
+
+    for (const layer of ["buildings-fill", "points"]) {
+      map.on("mousemove", layer, (e) => {
+        map.getCanvas().style.cursor = "pointer";
+        const p = e.features?.[0]?.properties as Props | undefined;
+        if (!p) return;
+        if (layer === "buildings-fill") setHover(Number(p.egid));
+        popup.setLngLat(e.lngLat)
+          .setHTML(`<strong>${p.address ?? "EGID " + p.egid}</strong><br/>IDC ${fmtNum(Number(p.idc), locale)}` +
+            (p.peer_median != null && String(p.peer_median) !== "null"
+              ? ` · ${tb("peerMedian")} ${fmtNum(Number(p.peer_median), locale)}` : ""))
+          .addTo(map);
+      });
+      map.on("mouseleave", layer, () => { map.getCanvas().style.cursor = ""; popup.remove(); });
+      map.on("click", layer, (e) => {
+        const p = e.features?.[0]?.properties as Props | undefined;
+        if (p) setSelected(normalize(p));
+      });
+    }
+    setMapReady(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data, points]);
+  }, [styleLoaded, data, points]);
+
+  /* apertura diretta di un edificio: /explore?building=EGID (link "Vedi sulla mappa" della pagina edificio) */
+  const urlDone = useRef(false);
+  useEffect(() => {
+    if (!mapReady || !data || urlDone.current || pendingSelect.current === null) return;
+    urlDone.current = true;
+    selectEgid(pendingSelect.current);
+    const url = new URL(window.location.href);
+    url.searchParams.delete("building");
+    window.history.replaceState(window.history.state, "", url.toString());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mapReady, data]);
 
   /* maschera "fuori Ginevra" + limiti di spostamento */
   useEffect(() => {
@@ -381,7 +430,7 @@ export default function Explorer() {
     apply();
     map.setMinZoom(8.5);
     // al primo caricamento su telefono: tutto il cantone visibile sopra il pannello
-    if (map.getContainer().clientWidth <= 900) {
+    if (map.getContainer().clientWidth <= 900 && pendingSelect.current === null) {
       map.fitBounds([[x0, y0], [x1, y1]], { padding: mobilePadding(map.getContainer(), panelEl.current), duration: 0 });
     }
     return () => { map.off("resize", apply); };
@@ -408,6 +457,12 @@ export default function Explorer() {
     if (family !== "all") conds.push(["==", ["get", "family"], family]);
     if (zoneId === "none") conds.push(["==", ["get", "zone_id"], null]);
     else if (zoneId !== "all") conds.push(["==", ["get", "zone_id"], Number(zoneId)]);
+    if (commune !== "all") conds.push(["==", ["get", "commune"], commune]);
+    if (energy !== "all") conds.push(["==", ["get", "energy_group"], energy]);
+    const ir = IDC_RANGES.find((r) => r.key === idcRange);
+    if (ir) conds.push([">=", ["get", "idc"], ir.min], ...(ir.max < Infinity ? [["<", ["get", "idc"], ir.max]] : []));
+    const sr = SRE_RANGES.find((r) => r.key === sreRange);
+    if (sr) conds.push([">=", ["to-number", ["get", "sre"], -1], sr.min], ...(sr.max < Infinity ? [["<", ["to-number", ["get", "sre"], -1], sr.max]] : []));
     const fresh = ["!=", ["get", "is_stale"], true];
     if (classFilter === "old") conds.push(["==", ["get", "is_stale"], true]);
     if (classFilter && classFilter !== "old") conds.push(fresh);
@@ -417,7 +472,7 @@ export default function Explorer() {
     if (classFilter === "high") conds.push(["all", ["!=", ["get", "peer_percentile"], null], [">", ["get", "peer_percentile"], 75]]);
     const filter = (conds.length > 1 ? conds : null) as never;
     for (const l of ["buildings-fill", "buildings-line", "points", "points-glow"]) map.setFilter(l, filter);
-  }, [family, zoneId, classFilter, mapReady]);
+  }, [family, zoneId, classFilter, commune, energy, idcRange, sreRange, mapReady]);
 
   /* zoom sulla zona scelta */
   useEffect(() => {
@@ -462,6 +517,16 @@ export default function Explorer() {
     return data.zones.features.map((f) => f.properties)
       .filter((z) => withB.has(Number(z.zone_id)))
       .sort((a, b) => zoneLabel(a).localeCompare(zoneLabel(b)));
+  }, [data]);
+
+  const communes = useMemo(
+    () => (data ? [...new Set(data.buildings.features.map((f) => f.properties.commune).filter((c): c is string => !!c))].sort((a, b) => a.localeCompare(b, "fr")) : []),
+    [data],
+  );
+  const energies = useMemo(() => {
+    if (!data) return [];
+    const present = new Set(data.buildings.features.map((f) => f.properties.energy_group));
+    return ENERGY_GROUPS.filter((g) => present.has(g));
   }, [data]);
 
   const results = useMemo(() => {
@@ -538,6 +603,40 @@ export default function Explorer() {
                   {families.map((f) => <option key={f} value={f}>{tf(f)}</option>)}
                 </select>
               </div>
+              <div className="more-filters-bar">
+                <button type="button" className="more-filters-btn" aria-expanded={moreOpen} onClick={() => setMoreOpen((o) => !o)}>
+                  <IconChevron size={14} /> {t("moreFilters")}{extraCount > 0 && <span className="more-filters-n">{extraCount}</span>}
+                </button>
+                {extraCount > 0 && <button type="button" className="more-filters-reset" onClick={resetExtra}>{t("resetFilters")}</button>}
+              </div>
+              {moreOpen && (
+                <div className="filters filters-more">
+                  <label><span>{t("fCommune")}</span>
+                    <select value={commune} onChange={(e) => setCommune(e.target.value)}>
+                      <option value="all">{t("fAll")}</option>
+                      {communes.map((c) => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  </label>
+                  <label><span>{t("fEnergy")}</span>
+                    <select value={energy} onChange={(e) => setEnergy(e.target.value)}>
+                      <option value="all">{t("fAll")}</option>
+                      {energies.map((g) => <option key={g} value={g}>{te(g)}</option>)}
+                    </select>
+                  </label>
+                  <label><span>{t("fIdc")}</span>
+                    <select value={idcRange} onChange={(e) => setIdcRange(e.target.value)}>
+                      <option value="all">{t("fAll")}</option>
+                      {IDC_RANGES.map((r) => <option key={r.key} value={r.key}>{r.max === Infinity ? `≥ ${r.min}` : r.min === 0 ? `< ${r.max}` : `${r.min} – ${r.max}`}</option>)}
+                    </select>
+                  </label>
+                  <label><span>{t("fSre")}</span>
+                    <select value={sreRange} onChange={(e) => setSreRange(e.target.value)}>
+                      <option value="all">{t("fAll")}</option>
+                      {SRE_RANGES.map((r) => <option key={r.key} value={r.key}>{r.max === Infinity ? `≥ ${fmtNum(r.min, locale)}` : r.min === 0 ? `< ${fmtNum(r.max, locale)}` : `${fmtNum(r.min, locale)} – ${fmtNum(r.max, locale)}`} m²</option>)}
+                    </select>
+                  </label>
+                </div>
+              )}
             </header>
 
             <div className="panel-body">

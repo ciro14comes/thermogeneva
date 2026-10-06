@@ -156,3 +156,36 @@ export function energyLabel(src: string | null | undefined, locale: string): str
  *  (classe del benchmark). Due edifici della stessa classe hanno lo stesso colore: li distingue la lettera. */
 export const COMPARE_LETTERS = ["A", "B", "C", "D"] as const;
 export const COMPARE_INK = "#0F172A";
+
+/** Fonte di energia raggruppata in poche famiglie (per filtri e grafici: i nomi SITG hanno molte varianti). */
+export const ENERGY_GROUPS = ["gas", "oil", "district", "heatpump", "electric", "wood", "other"] as const;
+export type EnergyGroup = (typeof ENERGY_GROUPS)[number];
+export const ENERGY_GROUP_COLOR: Record<EnergyGroup, string> = {
+  gas: "#F59E0B", oil: "#78716C", district: "#8B5CF6", heatpump: "#0EA5E9", electric: "#EC4899", wood: "#A16207", other: "#CBD5E1",
+};
+export function energyGroup(src: string | null | undefined): EnergyGroup | null {
+  if (!src) return null;
+  const s = src.trim();
+  if (/^gaz/i.test(s)) return "gas";
+  if (/^mazout/i.test(s)) return "oil";
+  if (/^CAD|distance/i.test(s)) return "district";
+  if (/PAC/i.test(s)) return "heatpump";
+  if (/^électricité|^electricite/i.test(s)) return "electric";
+  if (/^bois/i.test(s)) return "wood";
+  return "other";
+}
+
+/** Fasce per i filtri della mappa. IDC: legate alle soglie legali (450 / 650 / 800). */
+export const IDC_RANGES = [
+  { key: "lt300", min: 0, max: 300 },
+  { key: "300-450", min: 300, max: 450 },
+  { key: "450-650", min: 450, max: 650 },
+  { key: "650-800", min: 650, max: 800 },
+  { key: "gt800", min: 800, max: Infinity },
+] as const;
+export const SRE_RANGES = [
+  { key: "lt1000", min: 0, max: 1000 },
+  { key: "1000-5000", min: 1000, max: 5000 },
+  { key: "5000-20000", min: 5000, max: 20000 },
+  { key: "gt20000", min: 20000, max: Infinity },
+] as const;

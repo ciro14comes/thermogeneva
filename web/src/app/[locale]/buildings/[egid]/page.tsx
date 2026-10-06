@@ -3,8 +3,9 @@ import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import HistoryChart from "@/components/HistoryChart";
+import BuildingMiniMap from "@/components/BuildingMiniMap";
 import { parseEgid, getBuilding, getBuildingHistory, getZones, zoneLabel } from "@/lib/data";
-import { energyLabel, fmtNum, fmtOrdinal, fmtPct, trendColor } from "@/lib/format";
+import { CLASS_COLOR, classOfBuilding, energyLabel, fmtNum, fmtOrdinal, fmtPct, trendColor } from "@/lib/format";
 import { pageMeta } from "@/lib/seo";
 
 export const revalidate = 3600;
@@ -77,6 +78,7 @@ export default async function BuildingPage({ params }: Params) {
         )}
       </p>
       <div className="btn-row" style={{ marginTop: 12 }}>
+        <Link href={`/explore?building=${b.egid}`} className="btn btn-ghost">{t("viewOnMap")}</Link>
         <Link href={`/explore?compare=${b.egid}`} className="btn btn-ghost">+ {tc("add")}</Link>
       </div>
 
@@ -159,7 +161,12 @@ export default async function BuildingPage({ params }: Params) {
         />
       </div>
 
-      <div className="card section">
+      <div className="grid grid-2 section">
+      <div className="card mini-map-card">
+        <BuildingMiniMap egid={b.egid} color={CLASS_COLOR[classOfBuilding(b.peer_percentile, b.is_stale)]} label={t("mapLabel", { address: b.address ?? `EGID ${b.egid}` })} />
+        <Link href={`/explore?building=${b.egid}`} className="mini-map-link small">{t("viewOnMap")} →</Link>
+      </div>
+      <div className="card">
         <dl className="kv">
           <dt>{t("type")}</dt><dd style={{ fontFamily: "inherit" }}>{tf(b.family)}</dd>
           <dt>{t("destination")}</dt><dd style={{ fontFamily: "inherit" }}>{b.destination ?? "—"}</dd>
@@ -168,6 +175,7 @@ export default async function BuildingPage({ params }: Params) {
         </dl>
         <p className="note">{t("finalEnergyNote")}</p>
         {isHeatPump && <p className="note">{t("heatPumpNote")}</p>}
+      </div>
       </div>
     </div>
   );
