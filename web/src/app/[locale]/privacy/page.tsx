@@ -5,7 +5,7 @@ import { breadcrumbLd, pageMeta } from "@/lib/seo";
 
 type P = { params: Promise<{ locale: string }> };
 
-const CONTACT = process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "ciro14comes@gmail.com";
+const CONTACT = process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "ciro14comes@yahoo.it";
 
 export async function generateMetadata({ params }: P): Promise<Metadata> {
   const { locale } = await params;

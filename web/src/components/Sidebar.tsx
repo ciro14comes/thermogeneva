@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import {
-  IconBook, IconCompare, IconDatabase, IconGithub, IconHome, IconMap, IconPanel, IconShield, IconZones,
+  IconBook, IconCompare, IconDatabase, IconGithub, IconHome, IconInsight, IconMap, IconPanel, IconShield, IconZones,
 } from "./icons";
 
 export default function Sidebar({ lastRefresh }: { lastRefresh: string }) {
@@ -31,6 +31,7 @@ export default function Sidebar({ lastRefresh }: { lastRefresh: string }) {
     { href: "/explore", label: t("explore"), icon: <IconMap /> },
     { href: "/zones", label: t("zones"), icon: <IconZones /> },
     { href: "/compare", label: t("compare"), icon: <IconCompare /> },
+    { href: "/insights", label: t("insights"), icon: <IconInsight /> },
   ];
   const info = [
     { href: "/methodology", label: t("methodology"), icon: <IconBook /> },

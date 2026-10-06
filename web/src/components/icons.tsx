@@ -51,3 +51,6 @@ export const IconSwissCross = ({ size = 14 }: P) => (
     <path d="M13 6h6v7h7v6h-7v7h-6v-7H6v-6h7z" />
   </svg>
 );
+export const IconInsight = ({ size }: P) => (
+  <svg {...base(size)}><path d="M4.5 19.5h15" /><path d="M7 16v-4M12 16V8M17 16v-6" /><path d="m6.5 8.5 4-3.5 3 2.5 4.5-3.5" /></svg>
+);

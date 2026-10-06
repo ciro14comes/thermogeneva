@@ -118,6 +118,18 @@ async function rest<T>(path: string): Promise<T> {
   }
 }
 
+// Supabase restituisce al massimo 1000 righe per richiesta: per le liste lunghe leggiamo a pagine.
+const PAGE = 1000;
+async function restAll<T>(path: string): Promise<T[]> {
+  const out: T[] = [];
+  for (let offset = 0; offset < 50_000; offset += PAGE) {
+    const rows = await rest<T[]>(`${path}&limit=${PAGE}&offset=${offset}`);
+    out.push(...rows);
+    if (rows.length < PAGE) break;
+  }
+  return out;
+}
+
 function sleep(ms: number): Promise<void> {
   return new Promise((r) => setTimeout(r, ms));
 }
@@ -182,8 +194,7 @@ export async function getBuildingsInZone(zoneId: number): Promise<BuildingLatest
 }
 
 export async function getAllBuildings(): Promise<BuildingLatest[]> {
-  const rows = await rest<BuildingLatest[]>(`buildings_latest?order=egid.asc&limit=5000`);
-  return rows.map(num);
+  return (await restAll<BuildingLatest>(`buildings_latest?order=egid.asc`)).map(num);
 }
 
 export async function getZones(): Promise<Zone[]> {
@@ -203,7 +214,7 @@ export async function getZoneById(zoneId: number): Promise<Zone | null> {
 
 export async function getZoneMetrics(zoneId?: number): Promise<ZoneMetric[]> {
   const filter = zoneId !== undefined ? `zone_id=eq.${zoneId}&` : "";
-  const rows = await rest<ZoneMetric[]>(`zone_metrics?${filter}order=year.asc&limit=5000`);
+  const rows = await restAll<ZoneMetric>(`zone_metrics?${filter}order=year.asc,zone_id.asc`);
   return rows.map(num);
 }
 
