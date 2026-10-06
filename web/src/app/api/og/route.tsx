@@ -24,7 +24,7 @@ export async function GET(req: Request) {
           <div style={{ fontSize: 30, color: "#64748B" }}>{sub}</div>
         </div>
         <div style={{ display: "flex", gap: 14 }}>
-          {["#14B8A6", "#8AA0CB", "#F26B6B", "#94A3B8"].map((c) => (
+          {["#14B8A6", "#6D96EE", "#F26B6B", "#94A3B8"].map((c) => (
             <div key={c} style={{ width: 120, height: 14, borderRadius: 99, background: c }} />
           ))}
           <div style={{ marginLeft: "auto", fontSize: 26, color: "#2563EB" }}>thermogeneva.ch</div>

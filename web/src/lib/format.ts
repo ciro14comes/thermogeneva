@@ -87,7 +87,7 @@ export const PALETTE = {
 
 export const CLASS_COLOR: Record<BenchClass, string> = {
   good: "#14B8A6",   // Lower
-  mid: "#8AA0CB",    // Typical (tenue: risaltano gli estremi)
+  mid: "#6D96EE",    // Typical (blu chiaro: distinto dal grigio, meno acceso degli estremi)
   high: "#F26B6B",   // Higher
   none: "#94A3B8",   // No benchmark
   old: "#B6C0CD",    // Dato non aggiornato (ultima dichiarazione > 6 anni)

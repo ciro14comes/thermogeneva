@@ -16,7 +16,7 @@
 
   /* benchmark */
   --good: #14B8A6;   --good-bg: #E6F7F5;   /* Lower */
-  --mid: #8AA0CB;    --mid-bg: #EEF2F8;    /* Typical */
+  --mid: #6D96EE;    --mid-bg: #ECF2FD;    /* Typical */
   --high: #F26B6B;   --high-bg: #FDECEC;   /* Higher */
   --none: #94A3B8;   --none-bg: #EEF2F6;   /* No benchmark */
 
@@ -168,7 +168,7 @@ html[data-sidebar="collapsed"] .sidebar { padding: 18px 22px 18px 10px; }
 .badge-high { background: var(--high-bg); color: #C0393B; }
 .badge-warn { background: var(--warning-bg); color: #B45309; }
 .badge-ok { background: var(--good-bg); color: #0F766E; }
-.badge-mid { background: var(--mid-bg); color: #3F5A8C; }
+.badge-mid { background: var(--mid-bg); color: #2F5FC4; }
 
 .list-plain { list-style: none; padding: 0; margin: 0; }
 .list-plain li { padding: 10px 0; border-bottom: 1px solid var(--line); }
