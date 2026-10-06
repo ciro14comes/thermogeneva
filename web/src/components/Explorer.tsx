@@ -5,7 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import type { Map as MLMap } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { Link } from "@/i18n/navigation";
-import { CLASS_COLOR, PALETTE, classOfBuilding, energyLabel, fmtNum, fmtOrdinal, fmtPct, idcColor, trendColor, type BenchClass } from "@/lib/format";
+import { CLASS_COLOR, COMPARE_LETTERS, PALETTE, classOfBuilding, energyLabel, fmtNum, fmtOrdinal, fmtPct, idcColor, trendColor, type BenchClass } from "@/lib/format";
 import { IconArrowLeft, IconChevron, IconList, IconMap, IconSearch, IconSwissCross } from "./icons";
 
 /* ---------------- tipi ---------------- */
@@ -42,6 +42,7 @@ type View = "map" | "list";
 
 const STYLE_URL = "https://vectortiles.geo.admin.ch/styles/ch.swisstopo.lightbasemap.vt/style.json";
 const PANEL_W = 388 + 36;
+const MAX_COMPARE = 4;
 
 /* ---------------- espressioni colore MapLibre ---------------- */
 const CLASS_EXPR = [
@@ -133,6 +134,7 @@ export default function Explorer() {
   const t = useTranslations("explore");
   const tb = useTranslations("building");
   const tf = useTranslations("families");
+  const tc = useTranslations("compare");
   const locale = useLocale();
 
   const mapEl = useRef<HTMLDivElement>(null);
@@ -143,6 +145,24 @@ export default function Explorer() {
   const [mapReady, setMapReady] = useState(false);
 
   const [selected, setSelected] = useState<Props | null>(null);
+  // edifici scelti per il confronto (max 4): vivono solo nell'indirizzo della pagina (?compare=…), nessun cookie
+  const [compare, setCompare] = useState<number[]>([]);
+  const [compareReady, setCompareReady] = useState(false);
+  useEffect(() => {
+    const raw = new URLSearchParams(window.location.search).get("compare") ?? "";
+    const ids = [...new Set(raw.split(",").filter((x) => /^\d{1,10}$/.test(x)).map(Number))].slice(0, MAX_COMPARE);
+    setCompare(ids);
+    setCompareReady(true);
+  }, []);
+  useEffect(() => {
+    if (!compareReady) return;
+    const url = new URL(window.location.href);
+    if (compare.length) url.searchParams.set("compare", compare.join(","));
+    else url.searchParams.delete("compare");
+    window.history.replaceState(window.history.state, "", url.toString());
+  }, [compare, compareReady]);
+  const toggleCompare = (egid: number) =>
+    setCompare((cur) => (cur.includes(egid) ? cur.filter((x) => x !== egid) : cur.length >= MAX_COMPARE ? cur : [...cur, egid]));
   const [history, setHistory] = useState<HistoryPoint[] | null>(null);
   const [colorMode, setColorMode] = useState<ColorMode>("class");
   const [family, setFamily] = useState("all");
@@ -606,6 +626,32 @@ export default function Explorer() {
         </div>
       </div>
 
+      {/* ---------- barra del confronto ---------- */}
+      {compare.length > 0 && (
+        <div className="compare-tray" aria-label={tc("trayTitle")}>
+          <div className="compare-tray-inner">
+            <span className="tray-label">{tc("trayTitle")}</span>
+            {compare.map((egid, i) => {
+              const p = data?.buildings.features.find((f) => f.properties.egid === egid)?.properties;
+              const name = p?.address ?? `EGID ${egid}`;
+              return (
+                <span key={egid} className="compare-chip" title={name}>
+                  <span className={`cmp-letter cmp-c-${p ? classOfBuilding(toNum(p.peer_percentile), p.is_stale === true || (p.is_stale as unknown) === "true") : "none"}`}>{COMPARE_LETTERS[i]}</span>
+                  <span className="addr">{name}</span>
+                  <button onClick={() => toggleCompare(egid)} aria-label={`${tc("remove")} ${name}`}>×</button>
+                </span>
+              );
+            })}
+            {compare.length >= 2 ? (
+              <Link href={`/compare?b=${compare.join(",")}`} className="btn btn-primary">{tc("trayGo", { n: compare.length })}</Link>
+            ) : (
+              <span className="small muted" style={{ padding: "0 4px" }}>{tc("trayNeedTwo")}</span>
+            )}
+            <button className="tray-clear" onClick={() => setCompare([])}>{tc("trayClear")}</button>
+          </div>
+        </div>
+      )}
+
       {view === "list" && (
         <section className="list-panel" aria-label={t("viewList")}>
           <div className="table-wrap">
@@ -702,7 +748,18 @@ export default function Explorer() {
             )}
             <div className="btn-row">
               <Link href={`/buildings/${b.egid}`} className="btn btn-swiss">{t("fullAnalysis")} <IconSwissCross size={13} /></Link>
+              {(() => {
+                const inCmp = compare.includes(b.egid);
+                const full = !inCmp && compare.length >= MAX_COMPARE;
+                return (
+                  <button type="button" className="btn btn-compare" aria-pressed={inCmp} disabled={full}
+                    title={full ? tc("maxReached") : undefined} onClick={() => toggleCompare(b.egid)}>
+                    {inCmp ? `✓ ${tc("added")}` : `+ ${tc("add")}`}
+                  </button>
+                );
+              })()}
             </div>
+            {!compare.includes(b.egid) && compare.length >= MAX_COMPARE && <p className="small muted" style={{ margin: 0 }}>{tc("maxReached")}</p>}
           </div>
         </div>
       </>

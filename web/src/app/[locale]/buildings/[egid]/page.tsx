@@ -40,6 +40,7 @@ export default async function BuildingPage({ params }: Params) {
 
   const t = await getTranslations("building");
   const tf = await getTranslations("families");
+  const tc = await getTranslations("compare");
   const [b, history, zones] = await Promise.all([getBuilding(id), getBuildingHistory(id), getZones()]);
   if (!b) notFound();
   const zone = zones.find((z) => z.zone_id === b.zone_id);
@@ -75,6 +76,9 @@ export default async function BuildingPage({ params }: Params) {
           <> · <Link href={`/zones/${zone.slug}`}>{zoneLabel(zone)}</Link></>
         )}
       </p>
+      <div className="btn-row" style={{ marginTop: 12 }}>
+        <Link href={`/explore?compare=${b.egid}`} className="btn btn-ghost">+ {tc("add")}</Link>
+      </div>
 
       {b.is_stale && <p className="note">{t("staleNote", { year: b.year })}</p>}
       <div className="grid grid-4 section">

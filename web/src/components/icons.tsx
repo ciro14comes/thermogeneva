@@ -14,6 +14,9 @@ export const IconMap = ({ size }: P) => (
 export const IconZones = ({ size }: P) => (
   <svg {...base(size)}><path d="m12 3.75 8.25 4.5L12 12.75 3.75 8.25z" /><path d="m3.75 12.25 8.25 4.5 8.25-4.5" /><path d="m3.75 16.25 8.25 4.5 8.25-4.5" /></svg>
 );
+export const IconCompare = ({ size }: P) => (
+  <svg {...base(size)}><rect x="3.5" y="4.5" width="7" height="15" rx="2.5" /><rect x="13.5" y="4.5" width="7" height="15" rx="2.5" /><path d="M6 9h2M16 12h2" /></svg>
+);
 export const IconBook = ({ size }: P) => (
   <svg {...base(size)}><path d="M12 6.75C10.2 5.2 7.4 4.75 4 4.75v13c3.4 0 6.2.45 8 2 1.8-1.55 4.6-2 8-2v-13c-3.4 0-6.2.45-8 2z" /><path d="M12 6.75v13" /></svg>
 );

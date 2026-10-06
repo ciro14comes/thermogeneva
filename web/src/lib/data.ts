@@ -150,6 +150,30 @@ export async function getBuildingHistory(egid: number): Promise<HistoryPoint[]> 
   return rows.map(num);
 }
 
+/** Più edifici in una sola richiesta (per il confronto). */
+export async function getBuildingsByIds(ids: number[]): Promise<BuildingLatest[]> {
+  if (!ids.length) return [];
+  const rows = await rest<BuildingLatest[]>(`buildings_latest?egid=in.(${ids.join(",")})`);
+  return rows.map(num);
+}
+
+export async function getHistoriesByIds(ids: number[]): Promise<HistoryPoint[]> {
+  if (!ids.length) return [];
+  const rows = await rest<HistoryPoint[]>(`building_history?egid=in.(${ids.join(",")})&order=year.asc`);
+  return rows.map(num);
+}
+
+/** Lista di EGID dall'indirizzo (?b=1,2,3): solo cifre, senza doppioni, al massimo `max`. */
+export function parseEgidList(raw: string | undefined | null, max = 4): number[] {
+  const out: number[] = [];
+  for (const part of (raw ?? "").split(",")) {
+    const id = parseEgid(part.trim());
+    if (id !== null && !out.includes(id)) out.push(id);
+    if (out.length >= max) break;
+  }
+  return out;
+}
+
 export async function getBuildingsInZone(zoneId: number): Promise<BuildingLatest[]> {
   const rows = await rest<BuildingLatest[]>(
     `buildings_latest?zone_id=eq.${zoneId}&order=idc.desc`,

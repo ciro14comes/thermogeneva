@@ -151,3 +151,8 @@ export function energyLabel(src: string | null | undefined, locale: string): str
   for (const [re, en] of ENERGY_EN) if (re.test(src.trim())) return en;
   return src;
 }
+
+/** Identità degli edifici nel confronto (max 4): lettera A–D nel colore che l'edificio ha sulla mappa
+ *  (classe del benchmark). Due edifici della stessa classe hanno lo stesso colore: li distingue la lettera. */
+export const COMPARE_LETTERS = ["A", "B", "C", "D"] as const;
+export const COMPARE_INK = "#0F172A";
