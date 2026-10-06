@@ -399,6 +399,23 @@ tr.cmp-section th { background: var(--surface-2) !important; color: var(--muted)
 .lg-peer-dash { width: 18px; height: 0; border-top: 2px dashed #475569; }
 .lg-thr-h { width: 18px; height: 0; border-top: 2px dashed var(--warning); }
 
+/* storico a confronto, stile "trend" */
+.trend-card { background: linear-gradient(180deg, #F8FAFC, #F3F6F9); border: 1px solid var(--line); border-radius: 18px; padding: 18px 18px 8px; }
+.trend-legend { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 0.86rem; color: var(--ink-2); margin-bottom: 4px; }
+.trend-key { display: inline-flex; align-items: center; gap: 6px; min-width: 0; max-width: 260px; }
+.trend-key i { width: 11px; height: 11px; border-radius: 50%; border: 2.5px solid; background: #fff; flex: none; }
+.trend-key i.thr { border: none; border-radius: 0; width: 16px; height: 0; border-top: 2px dashed var(--warning); background: none; }
+.trend-key strong { font-family: var(--font-mono); }
+.trend-key-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.trend-key-thr { color: var(--muted); }
+.trend-plot { position: relative; }
+.trend-tip { position: absolute; top: 0; pointer-events: none; background: #fff; border-radius: 12px; padding: 8px 12px; box-shadow: 0 6px 20px rgba(15,23,42,.12), 0 1px 3px rgba(15,23,42,.08); font-size: 0.8rem; min-width: 150px; }
+.trend-tip-row { display: grid; grid-template-columns: 4px 14px 1fr auto; align-items: center; gap: 8px; padding: 2px 0; }
+.trend-tip-row i { width: 4px; height: 13px; border-radius: 2px; }
+.trend-tip-row strong { font-family: var(--font-mono); font-size: 0.78rem; }
+.trend-delta { color: var(--muted); font-size: 0.76rem; }
+.trend-delta.is-down { color: #0F766E; } .trend-delta.is-up { color: #C0393B; }
+
 @media (max-width: 900px) {
   :root, html[data-sidebar="collapsed"] { --side-w: 1fr; }
   .shell { grid-template-columns: 1fr; grid-template-rows: auto 1fr; height: auto; min-height: 100vh; padding: 8px; gap: 8px; }
@@ -418,6 +435,8 @@ tr.cmp-section th { background: var(--surface-2) !important; color: var(--muted)
   .cmp-heads { grid-template-columns: 1fr 1fr !important; }
   .glance { grid-template-columns: 1fr; }
   .hist-grid { grid-template-columns: 1fr; }
+  .trend-card { padding: 14px 10px 6px; }
+  .trend-key { max-width: 100%; }
   table.cmp-table { min-width: 0; }
   table.cmp-table th, table.cmp-table td { padding: 9px 10px; }
   table.cmp-table tbody th[scope="row"] { width: 118px; min-width: 118px; font-size: 0.8rem; }

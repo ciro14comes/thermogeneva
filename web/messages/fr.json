@@ -266,7 +266,7 @@
     "highest": "le plus haut",
     "gapNote": "Énergie au-dessus de la médiane = (IDC − médiane du groupe) × SRE ÷ 3 600, en MWh par an. Elle indique la chaleur que le bâtiment économiserait au niveau médian des bâtiments similaires ; 0 s'il est déjà à la médiane ou en dessous.",
     "chartTitle": "Historique de l'IDC (MJ/m²·an)",
-    "chartNote": "Tous les graphiques partagent la même échelle verticale (0 sur la ligne du bas) : les hauteurs sont directement comparables. Survolez un graphique (ou touchez-le) pour voir la valeur d'une année et la médiane du groupe.",
+    "chartNote": "Survolez le graphique (ou touchez-le) pour voir l'IDC de chaque bâtiment pour une année ; le pourcentage est l'évolution par rapport à l'année précédente (vert = en baisse, rouge = en hausse). Ligne orange pointillée : seuil de 450 MJ/m².",
     "notFound": "Certains bâtiments du lien n'ont pas été trouvés et ont été ignorés.",
     "metaTitle": "Comparer des bâtiments · ThermoGeneva",
     "metaDescription": "Comparez l'indice de dépense de chaleur (IDC) de jusqu'à quatre bâtiments des zones industrielles genevoises : percentile, tendance, énergie thermique estimée et seuils légaux.",
