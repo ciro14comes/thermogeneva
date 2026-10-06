@@ -25,6 +25,22 @@ def start_run(conn, source, schema_hash):
     return run_id
 
 
+def baseline(conn):
+    """Numeri dell'ultimo caricamento riuscito (ciò che c'è ora nel database), per i controlli di qualità."""
+    with conn.cursor() as cur:
+        cur.execute("""
+            select (select count(*) from raw.sitg_idc),
+                   (select avg((indice is null)::int)::float from raw.sitg_idc),
+                   (select avg((sre is null or sre <= 0)::int)::float from raw.sitg_idc),
+                   (select count(*) from core.buildings),
+                   (select count(*) from core.industrial_zones),
+                   (select max(year) from core.energy_idc),
+                   (select count(*) from public.buildings_latest)""")
+        r = cur.fetchone()
+    keys = ["raw_rows", "idc_null_share", "sre_null_share", "buildings", "zones", "max_year", "site_buildings"]
+    return {k: v for k, v in zip(keys, r) if v is not None}
+
+
 def finish_run(conn, run_id, status, fetched=None, loaded=None, rejected=None, message=None):
     with conn.cursor() as cur:
         cur.execute("""update core.etl_runs set finished_at = now(), status = %s, rows_fetched = %s,
@@ -39,8 +55,10 @@ def _copy(cur, table, cols, rows):
             cp.write_row([r.get(c) for c in cols])
 
 
-def load_all(conn, run_id, raw_rows, records, buildings, zones, canton=None):
-    """raw -> core in una transazione: o tutto o niente."""
+def load_all(conn, run_id, raw_rows, records, buildings, zones, canton=None, final_check=None):
+    """raw -> core in una transazione: o tutto o niente.
+    `final_check(numero_edifici_sul_sito)` viene chiamato prima del commit: se solleva un errore,
+    tutto il caricamento viene annullato e il sito resta con i dati precedenti."""
     with conn.transaction(), conn.cursor() as cur:
         # --- RAW: snapshot attributi IDC (senza geometria) e zone FTI; tiene solo l'ultimo snapshot
         raw_cols = [c for c in config.IDC_FIELDS] + ["snapshot_id"]
@@ -138,6 +156,11 @@ def load_all(conn, run_id, raw_rows, records, buildings, zones, canton=None):
 
         # --- ANALYTICS: ricalcola benchmark e metriche di zona
         cur.execute("select analytics.refresh_all()")
+
+        # --- CONTROLLO FINALE: quanti edifici vedrà il sito (ancora dentro la transazione)
+        if final_check:
+            cur.execute("select count(*) from public.buildings_latest")
+            final_check(cur.fetchone()[0])
     return loaded
 
 

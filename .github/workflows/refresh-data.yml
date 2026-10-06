@@ -1,16 +1,29 @@
 # ThermoGeneva — aggiornamento automatico dei dati
 # Scarica IDC, zone FTI e confine cantonale dal SITG/swisstopo, li valida e li carica in Supabase,
 # poi ricalcola i benchmark. Gira ogni lunedì e si può lanciare a mano da GitHub (Actions → Run workflow).
+#
+# Protezioni:
+# - test dei controlli di qualità prima di ogni esecuzione;
+# - se i dati scaricati sono anomali (molte righe in meno, campi vuoti, zone sparite…) il caricamento
+#   si ferma, il sito resta con i dati della settimana prima e GitHub invia un'email di errore;
+# - "force" (solo a mano) carica comunque, dopo aver verificato che il cambiamento è reale;
+# - keepalive: GitHub disattiva le esecuzioni programmate dopo 60 giorni senza attività sul repository.
 name: Refresh data
 
 on:
   schedule:
     - cron: "17 4 * * 1"   # lunedì 04:17 UTC (≈ 06:17 a Ginevra in estate)
   workflow_dispatch:
+    inputs:
+      force:
+        description: "Carica anche se i controlli di qualità segnalano un problema"
+        type: boolean
+        default: false
 
-# Permessi minimi: il job legge solo il codice, non scrive nulla sul repository
+# Permessi minimi: lettura del codice; "actions: write" serve solo a mantenere attivo il workflow
 permissions:
   contents: read
+  actions: write
 
 concurrency:
   group: refresh-data
@@ -32,13 +45,26 @@ jobs:
       - name: Installa le dipendenze
         run: pip install -r requirements.txt
 
+      - name: Intestazione del riepilogo
+        run: echo "### ThermoGeneva — refresh dati" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Test dei controlli di qualità
+        run: python -m unittest discover -s tests -v
+
       - name: Esegui l'ETL
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          ETL_FORCE: ${{ inputs.force && '1' || '' }}
         run: python -m etl.run
 
       - name: Riepilogo
         if: always()
         run: |
-          echo "### ThermoGeneva — refresh dati" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "Esito: ${{ job.status }} — $(date -u '+%Y-%m-%d %H:%M UTC')" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Mantieni attivo l'aggiornamento programmato
+        if: always() && github.event_name == 'schedule'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X PUT "repos/${{ github.repository }}/actions/workflows/refresh-data.yml/enable"

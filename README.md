@@ -68,6 +68,7 @@ flowchart LR
 ```
 
 - **ETL (`etl/`):** paged download from the SITG ArcGIS REST services, with a schema-drift check. Only an allow-list of fields is imported: no owner, occupant or respondent fields ever enter the database. Records are cleaned (invalid years, missing EGIDs, duplicates) and loaded in a single transaction. Each building is assigned to a zone by largest overlap (≥ 50 %) or by its point-on-surface.
+- **Data-quality guard (`etl/checks.py`):** before loading, each weekly download is compared with the last successful load: row and building counts, FTI zones, latest year, share of empty IDC/SRE values, buildings without geometry and rejected rows. After the benchmarks are recalculated (still inside the transaction) the number of buildings shown on the site is checked again. If anything is out of tolerance the load is rolled back, the site keeps last week's data and the GitHub Actions run fails, which sends an e-mail alert. The checks are covered by unit tests (`tests/`) that run before every refresh.
 - **Database (`sql/migrations/`):** PostGIS in EPSG:2056, with materialized views for the benchmarks and zone metrics. The public API is a set of read-only views behind row-level security. The browser never talks to the database directly; only the Next.js server does.
 - **Web (`web/`):**
   - **Stack:** Next.js 16 (App Router) with next-intl for EN/FR and MapLibre GL on the swisstopo light basemap.
@@ -78,7 +79,8 @@ flowchart LR
 ## Repository structure
 
 ```
-etl/              Python ETL (fetch → transform → load)
+etl/              Python ETL (fetch → transform → quality checks → load)
+tests/            unit tests for the data-quality checks
 sql/migrations/   Database schema, benchmarks and public API, in order (001–011)
 web/              Next.js website (EN/FR)
 .github/          Weekly data refresh workflow, Dependabot
@@ -95,6 +97,8 @@ pip install -r requirements.txt
 cp .env.example .env          # then set SUPABASE_DB_URL (never commit it)
 python -m etl.run --dry-run   # download and validate only
 python -m etl.run             # full load + benchmark refresh
+python -m etl.run --force     # load even if a quality check fails (after checking the change is real)
+python -m unittest discover -s tests   # quality-check tests
 ```
 
 **Website:** needs Node 24.
