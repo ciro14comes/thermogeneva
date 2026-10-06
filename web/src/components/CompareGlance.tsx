@@ -10,6 +10,8 @@ export type GlanceItem = {
   is_stale: boolean;
   final_energy_mwh: number | null;
   gap_mwh: number | null;
+  /** energia se l'edificio fosse alla mediana del gruppo = mediana × SRE / 3600 */
+  median_mwh: number | null;
 };
 
 type Labels = {
@@ -17,6 +19,7 @@ type Labels = {
   lower: string; typical: string; higher: string; median: string;
   idcTitle: string; idcLegendBar: string; idcLegendPeer: string; idcLegendThreshold: string;
   energyTitle: string; energyLegendBase: string; energyLegendAbove: string; aboveMedian: string;
+  energyLegendBelow: string; energyLegendMedian: string; vsMedian: string; noMedian: string;
 };
 
 export default function CompareGlance({ items, labels: l, locale }: { items: GlanceItem[]; labels: Labels; locale: string }) {
@@ -40,7 +43,8 @@ export default function CompareGlance({ items, labels: l, locale }: { items: Gla
   const pct = (v: number) => `${Math.min(100, (v / idcMax) * 100)}%`;
 
   /* --- 3. energia termica stimata, con la parte sopra la mediana --- */
-  const eMax = Math.max(1, ...items.map((it) => it.final_energy_mwh ?? 0));
+  const eMax = Math.max(1, ...items.flatMap((it) => [it.final_energy_mwh ?? 0, it.median_mwh ?? 0])) * 1.02;
+  const ep = (v: number) => `${(v / eMax) * 100}%`;
 
   return (
     <div className="glance">
@@ -105,22 +109,42 @@ export default function CompareGlance({ items, labels: l, locale }: { items: Gla
         </div>
       </section>
 
-      {/* 3 */}
+      {/* 3 — energia termica stimata rispetto al livello "alla mediana del gruppo" */}
       <section className="card glance-card">
         <h3 className="glance-title">{l.energyTitle}</h3>
-        <div className="bars">
+        <div className="ebars">
           {items.map((it, i) => {
-            const e = it.final_energy_mwh ?? 0;
-            const g = Math.min(e, it.gap_mwh ?? 0);
+            const e = it.final_energy_mwh;
+            const med = it.median_mwh;
+            const diff = e != null && med != null ? e - med : null;
             return (
-              <div key={i} className="bar-row">
+              <div key={i} className="ebar-row">
                 <span className={`cmp-letter cmp-c-${classOfBuilding(it.peer_percentile, it.is_stale)}`}>{COMPARE_LETTERS[i]}</span>
-                <div className="bar-area">
-                  <div className="bar bar-energy" style={{ width: `${(e / eMax) * 100}%` }}>
-                    {g > 0 && <div className="bar-energy-above" style={{ width: `${(g / Math.max(e, 1)) * 100}%` }} />}
-                  </div>
+                <div className="ebar-area">
+                  {e != null && (
+                    med == null ? (
+                      <div className="ebar ebar-base" style={{ width: ep(e) }} />
+                    ) : (
+                      <>
+                        {/* parte fino al livello mediano (o fino al consumo, se è sotto) */}
+                        <div className="ebar ebar-base" style={{ width: ep(Math.min(e, med)) }} />
+                        {/* sopra la mediana: rosso */}
+                        {e > med && <div className="ebar ebar-above" style={{ left: ep(med), width: ep(e - med) }} />}
+                        {/* sotto la mediana: margine verde tratteggiato */}
+                        {e < med && <div className="ebar ebar-below" style={{ left: ep(e), width: ep(med - e) }} />}
+                        <div className="ebar-median" style={{ left: ep(med) }} title={`${l.energyLegendMedian}: ${n(med)} MWh`} />
+                      </>
+                    )
+                  )}
                 </div>
-                <span className="bar-value num" title={g > 0 ? `${n(g)} MWh ${l.aboveMedian}` : undefined}>{n(it.final_energy_mwh)}</span>
+                <div className="ebar-value">
+                  <span className="num">{n(e)}</span>
+                  {diff != null ? (
+                    <span className={`ebar-diff num ${diff > 0 ? "is-up" : "is-down"}`}>
+                      {diff > 0 ? "+" : "−"}{n(Math.abs(diff))} {l.vsMedian}
+                    </span>
+                  ) : <span className="ebar-diff">{l.noMedian}</span>}
+                </div>
               </div>
             );
           })}
@@ -128,6 +152,8 @@ export default function CompareGlance({ items, labels: l, locale }: { items: Gla
         <div className="glance-legend small muted">
           <span><i className="lg-base" /> {l.energyLegendBase}</span>
           <span><i className="lg-above" /> {l.energyLegendAbove}</span>
+          <span><i className="lg-below" /> {l.energyLegendBelow}</span>
+          <span><i className="lg-peer" /> {l.energyLegendMedian}</span>
         </div>
       </section>
     </div>

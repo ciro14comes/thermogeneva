@@ -317,9 +317,10 @@ tr.cmp-section th { background: var(--surface-2) !important; color: var(--muted)
 .cmp-note { display: block; font-size: 0.74rem; color: var(--muted); font-weight: 400; margin-top: 4px; line-height: 1.4; }
 .cmp-tag { display: inline-block; margin-left: 8px; font-size: 0.68rem; font-weight: 600; padding: 1px 7px; border-radius: 99px; vertical-align: 1px; white-space: nowrap; }
 /* nella pagina confronto i tag colorati hanno contorno e ombra, per staccarsi dalle colonne grigie */
-.cmp-page .badge, .cmp-page .cmp-tag {
+.cmp-page .badge {
   box-shadow: inset 0 0 0 1px color-mix(in srgb, currentColor 38%, transparent), 0 1px 2px rgba(15, 23, 42, 0.14);
 }
+.cmp-page .cmp-tag { box-shadow: 0 1px 2px rgba(15, 23, 42, 0.14); } /* lowest/highest: solo ombra, senza contorno */
 /* più basso = dato migliore (verde), più alto = dato peggiore (rosso): in tutte le righe un valore più basso è preferibile */
 .cmp-tag-low { background: var(--good-bg); color: #0F766E; }
 .cmp-tag-high { background: var(--high-bg); color: #C0393B; }
@@ -345,7 +346,7 @@ tr.cmp-section th { background: var(--surface-2) !important; color: var(--muted)
 .lg-bar { width: 16px; height: 8px; border-radius: 3px; background: linear-gradient(90deg, var(--good) 0 33%, var(--mid) 33% 66%, var(--high) 66%); }
 .lg-peer { width: 2px; height: 14px; background: var(--ink); border-radius: 1px; }
 .lg-thr { width: 0; height: 14px; border-left: 2px dashed var(--warning); }
-.lg-base { width: 16px; height: 8px; border-radius: 3px; background: var(--line-2); }
+.lg-base { width: 16px; height: 8px; border-radius: 3px; background: #94A3B8; }
 .lg-above { width: 16px; height: 8px; border-radius: 3px; background: var(--high); }
 
 .pos-wrap { position: relative; margin: 0 12px; }
@@ -402,7 +403,11 @@ tr.cmp-section th { background: var(--surface-2) !important; color: var(--muted)
 /* storico a confronto, stile "trend" */
 .trend-card { background: linear-gradient(180deg, #F8FAFC, #F3F6F9); border: 1px solid var(--line); border-radius: 18px; padding: 18px 18px 8px; }
 .trend-legend { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 0.86rem; color: var(--ink-2); margin-bottom: 4px; }
-.trend-key { display: inline-flex; align-items: center; gap: 6px; min-width: 0; max-width: 260px; }
+.trend-key { all: unset; display: inline-flex; align-items: center; gap: 6px; min-width: 0; max-width: 260px; cursor: pointer; padding: 3px 8px 3px 4px; border-radius: 99px; font-size: 0.86rem; color: var(--ink-2); transition: opacity .15s, background .15s; }
+.trend-key.is-on { background: #fff; box-shadow: 0 1px 3px rgba(15,23,42,.12); color: var(--ink); }
+.trend-key.is-dim { opacity: 0.5; }
+.trend-key:focus-visible { outline: 2px solid var(--primary); }
+.trend-key-thr { cursor: default; }
 .trend-key i { width: 11px; height: 11px; border-radius: 50%; border: 2.5px solid; background: #fff; flex: none; }
 .trend-key i.thr { border: none; border-radius: 0; width: 16px; height: 0; border-top: 2px dashed var(--warning); background: none; }
 .trend-key strong { font-family: var(--font-mono); }
@@ -410,11 +415,28 @@ tr.cmp-section th { background: var(--surface-2) !important; color: var(--muted)
 .trend-key-thr { color: var(--muted); }
 .trend-plot { position: relative; }
 .trend-tip { position: absolute; top: 0; pointer-events: none; background: #fff; border-radius: 12px; padding: 8px 12px; box-shadow: 0 6px 20px rgba(15,23,42,.12), 0 1px 3px rgba(15,23,42,.08); font-size: 0.8rem; min-width: 150px; }
+.trend-tip-row.is-on { font-weight: 700; }
 .trend-tip-row { display: grid; grid-template-columns: 4px 14px 1fr auto; align-items: center; gap: 8px; padding: 2px 0; }
 .trend-tip-row i { width: 4px; height: 13px; border-radius: 2px; }
 .trend-tip-row strong { font-family: var(--font-mono); font-size: 0.78rem; }
 .trend-delta { color: var(--muted); font-size: 0.76rem; }
+.trend-nodata { color: var(--muted); font-size: 0.74rem; font-style: italic; }
 .trend-delta.is-down { color: #0F766E; } .trend-delta.is-up { color: #C0393B; }
+
+/* energia termica rispetto al livello mediano */
+.ebars { display: flex; flex-direction: column; gap: 14px; margin-top: 16px; }
+.ebar-row { display: grid; grid-template-columns: 22px 1fr 92px; gap: 10px; align-items: center; }
+.ebar-area { position: relative; height: 16px; background: #F1F4F8; border-radius: 5px; }
+.ebar { position: absolute; top: 0; bottom: 0; left: 0; border-radius: 4px; }
+.ebar-base { background: #94A3B8; }
+.ebar-above { background: var(--high); border-radius: 0 4px 4px 0; }
+.ebar-below { background: repeating-linear-gradient(135deg, var(--good-bg) 0 4px, #fff 4px 7px); box-shadow: inset 0 0 0 1.5px var(--good); border-radius: 0 4px 4px 0; }
+.ebar-median { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--ink); border-radius: 1px; transform: translateX(-1px); }
+.ebar-value { display: flex; flex-direction: column; align-items: flex-end; line-height: 1.15; }
+.ebar-value .num:first-child { font-size: 0.9rem; font-weight: 600; }
+.ebar-diff { font-size: 0.7rem; color: var(--muted); white-space: nowrap; }
+.ebar-diff.is-up { color: #C0393B; } .ebar-diff.is-down { color: #0F766E; }
+.lg-below { width: 16px; height: 8px; border-radius: 3px; background: repeating-linear-gradient(135deg, var(--good-bg) 0 3px, #fff 3px 5px); box-shadow: inset 0 0 0 1.5px var(--good); }
 
 @media (max-width: 900px) {
   :root, html[data-sidebar="collapsed"] { --side-w: 1fr; }

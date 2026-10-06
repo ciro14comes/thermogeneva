@@ -266,7 +266,7 @@
     "highest": "highest",
     "gapNote": "Energy above peer median = (IDC − peer median) × SRE ÷ 3,600, in MWh per year. It shows how much heat the building would save at the median level of similar buildings; 0 when it is already at or below the median.",
     "chartTitle": "IDC history (MJ/m²·yr)",
-    "chartNote": "Move over the chart (or tap it) to see each building's IDC for a year; the percentage is the change from the previous year (green = lower, red = higher). Dashed orange line: 450 MJ/m² threshold.",
+    "chartNote": "Lines are grey; move over the chart or a name in the legend to highlight a building in its map colour (click a name to keep it highlighted). The box shows each building's IDC for that year and the change from the previous year (green = lower, red = higher). Dotted grey segments: years without an IDC declaration. Dashed orange line: 450 MJ/m² threshold.",
     "notFound": "Some buildings in the link were not found and were skipped.",
     "metaTitle": "Compare buildings · ThermoGeneva",
     "metaDescription": "Compare the heat consumption index (IDC) of up to four buildings in Geneva's industrial zones: peer percentile, trend, estimated thermal energy and legal thresholds.",
@@ -284,11 +284,16 @@
     "idcLegendBar": "Building IDC (colour = benchmark class)",
     "idcLegendPeer": "Peer median",
     "idcLegendThreshold": "450 threshold",
-    "energyTitle": "Estimated thermal energy (MWh/yr)",
-    "energyLegendBase": "Up to peer median level",
-    "energyLegendAbove": "Above peer median",
+    "energyTitle": "Estimated thermal energy vs peer median level (MWh/yr)",
+    "energyLegendBase": "Energy",
+    "energyLegendAbove": "Above the median level",
     "aboveMedian": "above peer median",
     "histIdc": "Building IDC (colour = benchmark class)",
-    "histChange": "3 yrs"
+    "histChange": "3 yrs",
+    "noDeclaration": "no declaration",
+    "energyLegendBelow": "Below the median level (margin)",
+    "energyLegendMedian": "Energy if at peer median",
+    "vsMedian": "MWh vs median",
+    "noMedian": "no peer median"
   }
 }

@@ -266,7 +266,7 @@
     "highest": "le plus haut",
     "gapNote": "Énergie au-dessus de la médiane = (IDC − médiane du groupe) × SRE ÷ 3 600, en MWh par an. Elle indique la chaleur que le bâtiment économiserait au niveau médian des bâtiments similaires ; 0 s'il est déjà à la médiane ou en dessous.",
     "chartTitle": "Historique de l'IDC (MJ/m²·an)",
-    "chartNote": "Survolez le graphique (ou touchez-le) pour voir l'IDC de chaque bâtiment pour une année ; le pourcentage est l'évolution par rapport à l'année précédente (vert = en baisse, rouge = en hausse). Ligne orange pointillée : seuil de 450 MJ/m².",
+    "chartNote": "Les lignes sont grises ; survolez le graphique ou un nom de la légende pour mettre un bâtiment en évidence dans sa couleur de la carte (cliquez sur un nom pour le garder en évidence). Le cadre montre l'IDC de chaque bâtiment pour l'année et l'évolution par rapport à l'année précédente (vert = en baisse, rouge = en hausse). Segments gris pointillés : années sans déclaration d’IDC. Ligne orange pointillée : seuil de 450 MJ/m².",
     "notFound": "Certains bâtiments du lien n'ont pas été trouvés et ont été ignorés.",
     "metaTitle": "Comparer des bâtiments · ThermoGeneva",
     "metaDescription": "Comparez l'indice de dépense de chaleur (IDC) de jusqu'à quatre bâtiments des zones industrielles genevoises : percentile, tendance, énergie thermique estimée et seuils légaux.",
@@ -284,11 +284,16 @@
     "idcLegendBar": "IDC du bâtiment (couleur = classe du benchmark)",
     "idcLegendPeer": "Médiane du groupe",
     "idcLegendThreshold": "Seuil de 450",
-    "energyTitle": "Énergie thermique estimée (MWh/an)",
-    "energyLegendBase": "Jusqu'au niveau médian",
-    "energyLegendAbove": "Au-dessus de la médiane",
+    "energyTitle": "Énergie thermique estimée vs niveau médian du groupe (MWh/an)",
+    "energyLegendBase": "Énergie",
+    "energyLegendAbove": "Au-dessus du niveau médian",
     "aboveMedian": "au-dessus de la médiane",
     "histIdc": "IDC du bâtiment (couleur = classe du benchmark)",
-    "histChange": "3 ans"
+    "histChange": "3 ans",
+    "noDeclaration": "pas de déclaration",
+    "energyLegendBelow": "En dessous du niveau médian (marge)",
+    "energyLegendMedian": "Énergie au niveau médian du groupe",
+    "vsMedian": "MWh vs médiane",
+    "noMedian": "pas de médiane"
   }
 }

@@ -176,12 +176,14 @@ export default async function ComparePage({ params, searchParams }: P) {
               items={buildings.map((b) => ({
                 idc: b.idc, peer_median: b.peer_median, peer_percentile: b.peer_percentile, is_stale: b.is_stale,
                 final_energy_mwh: b.final_energy_mwh, gap_mwh: gap(b),
+                median_mwh: b.peer_median != null && b.sre != null ? (b.peer_median * b.sre) / 3600 : null,
               }))}
               labels={{
                 posTitle: t("posTitle"), posNote: t("posNote"), noBenchmark: t("noBenchmark"), outdated: t("outdated"),
                 lower: t("lower"), typical: t("typical"), higher: t("higher"), median: t("median"),
                 idcTitle: t("idcTitle"), idcLegendBar: t("idcLegendBar"), idcLegendPeer: t("idcLegendPeer"), idcLegendThreshold: t("idcLegendThreshold"),
                 energyTitle: t("energyTitle"), energyLegendBase: t("energyLegendBase"), energyLegendAbove: t("energyLegendAbove"), aboveMedian: t("aboveMedian"),
+                energyLegendBelow: t("energyLegendBelow"), energyLegendMedian: t("energyLegendMedian"), vsMedian: t("vsMedian"), noMedian: t("noMedian"),
               }}
             />
           </section>
@@ -231,7 +233,7 @@ export default async function ComparePage({ params, searchParams }: P) {
           <section className="card section">
             <h2 style={{ marginTop: 0 }}>{t("chartTitle")}</h2>
             <CompareChart series={series} locale={locale}
-              labels={{ idc: t("histIdc"), peer: t("idcLegendPeer"), threshold: t("idcLegendThreshold"), change: t("histChange") }} />
+              labels={{ idc: t("histIdc"), peer: t("idcLegendPeer"), threshold: t("idcLegendThreshold"), change: t("histChange"), noData: t("noDeclaration") }} />
             <p className="small muted" style={{ marginBottom: 0 }}>{t("chartNote")}</p>
           </section>
 
