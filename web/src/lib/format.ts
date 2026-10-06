@@ -87,10 +87,10 @@ export const PALETTE = {
 
 export const CLASS_COLOR: Record<BenchClass, string> = {
   good: "#14B8A6",   // Lower
-  mid: "#5B8DEF",    // Typical
+  mid: "#8AA0CB",    // Typical (tenue: risaltano gli estremi)
   high: "#F26B6B",   // Higher
   none: "#94A3B8",   // No benchmark
-  old: "#CBD5E1",    // Dato non aggiornato (ultima dichiarazione > 6 anni)
+  old: "#B6C0CD",    // Dato non aggiornato (ultima dichiarazione > 6 anni)
 };
 
 /** IDC continuo (MJ/m²·anno) sulla scala blu: ≤200 chiaro → ≥800 scuro. */

@@ -137,7 +137,7 @@ export default function CompareGlance({ items, labels: l, locale }: { items: Gla
                         style={d > 0 ? { left: "50%", width: `${(d / dMax) * 50}%` } : { right: "50%", width: `${(-d / dMax) * 50}%` }} />
                     )}
                   </div>
-                  <span className={`ediff-val num ${d == null || near ? "" : d > 0 ? "is-up" : "is-down"}`}>
+                  <span className={d == null || near ? "ediff-val is-mid" : `ediff-val num ${d > 0 ? "is-up" : "is-down"}`}>
                     {d == null ? l.noMedian : near ? l.atMedian : `${d > 0 ? "+" : "−"}${n(Math.abs(d))}`}
                   </span>
                 </div>
