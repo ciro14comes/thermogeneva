@@ -284,7 +284,7 @@
     "idcLegendBar": "Building IDC (colour = benchmark class)",
     "idcLegendPeer": "Peer median",
     "idcLegendThreshold": "450 threshold",
-    "energyTitle": "Estimated thermal energy vs peer median level (MWh/yr)",
+    "energyTitle": "Estimated thermal energy (MWh/yr)",
     "energyLegendBase": "Energy",
     "energyLegendAbove": "Above the median level",
     "aboveMedian": "above peer median",
@@ -294,6 +294,10 @@
     "energyLegendBelow": "Below the median level (margin)",
     "energyLegendMedian": "Energy if at peer median",
     "vsMedian": "MWh vs median",
-    "noMedian": "no peer median"
+    "noMedian": "no peer median",
+    "energyColTotal": "Total per year",
+    "energyColDiff": "Compared with the peer median level",
+    "atMedian": "at median",
+    "energyNote": "Left: estimated heat used per year (IDC × heated area ÷ 3,600). Right: how much more (red) or less (green) the building uses than it would at the median IDC of similar buildings, with the same floor area."
   }
 }

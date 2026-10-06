@@ -284,7 +284,7 @@
     "idcLegendBar": "IDC du bâtiment (couleur = classe du benchmark)",
     "idcLegendPeer": "Médiane du groupe",
     "idcLegendThreshold": "Seuil de 450",
-    "energyTitle": "Énergie thermique estimée vs niveau médian du groupe (MWh/an)",
+    "energyTitle": "Énergie thermique estimée (MWh/an)",
     "energyLegendBase": "Énergie",
     "energyLegendAbove": "Au-dessus du niveau médian",
     "aboveMedian": "au-dessus de la médiane",
@@ -294,6 +294,10 @@
     "energyLegendBelow": "En dessous du niveau médian (marge)",
     "energyLegendMedian": "Énergie au niveau médian du groupe",
     "vsMedian": "MWh vs médiane",
-    "noMedian": "pas de médiane"
+    "noMedian": "pas de médiane",
+    "energyColTotal": "Total par an",
+    "energyColDiff": "Par rapport au niveau médian du groupe",
+    "atMedian": "à la médiane",
+    "energyNote": "À gauche : chaleur estimée utilisée par an (IDC × surface chauffée ÷ 3 600). À droite : combien le bâtiment consomme de plus (rouge) ou de moins (vert) qu'au niveau de l'IDC médian des bâtiments similaires, à surface égale."
   }
 }

@@ -184,6 +184,7 @@ export default async function ComparePage({ params, searchParams }: P) {
                 idcTitle: t("idcTitle"), idcLegendBar: t("idcLegendBar"), idcLegendPeer: t("idcLegendPeer"), idcLegendThreshold: t("idcLegendThreshold"),
                 energyTitle: t("energyTitle"), energyLegendBase: t("energyLegendBase"), energyLegendAbove: t("energyLegendAbove"), aboveMedian: t("aboveMedian"),
                 energyLegendBelow: t("energyLegendBelow"), energyLegendMedian: t("energyLegendMedian"), vsMedian: t("vsMedian"), noMedian: t("noMedian"),
+                energyColTotal: t("energyColTotal"), energyColDiff: t("energyColDiff"), atMedian: t("atMedian"), energyNote: t("energyNote"),
               }}
             />
           </section>
