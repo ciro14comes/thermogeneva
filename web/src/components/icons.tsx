@@ -54,3 +54,9 @@ export const IconSwissCross = ({ size = 14 }: P) => (
 export const IconInsight = ({ size }: P) => (
   <svg {...base(size)}><path d="M4.5 19.5h15" /><path d="M7 16v-4M12 16V8M17 16v-6" /><path d="m6.5 8.5 4-3.5 3 2.5 4.5-3.5" /></svg>
 );
+export const IconMenu = ({ size }: P) => (
+  <svg {...base(size)}><path d="M4 7h16M4 12h16M4 17h16" /></svg>
+);
+export const IconClose = ({ size }: P) => (
+  <svg {...base(size)}><path d="M6 6l12 12M18 6L6 18" /></svg>
+);

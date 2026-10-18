@@ -18,7 +18,9 @@
     "updated": "Données mises à jour",
     "home": "Accueil",
     "compare": "Comparer",
-    "insights": "Analyses"
+    "insights": "Analyses",
+    "menuOpen": "Ouvrir le menu",
+    "menuClose": "Fermer le menu"
   },
   "footer": {
     "source": "Source : SITG / OCEN — IDC et zones industrielles FTI, données ouvertes (classe A). Fond de carte © swisstopo. Valeurs transformées par ThermoGeneva (voir Méthodologie).",

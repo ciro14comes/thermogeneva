@@ -18,7 +18,9 @@
     "updated": "Data updated",
     "home": "Home",
     "compare": "Compare",
-    "insights": "Insights"
+    "insights": "Insights",
+    "menuOpen": "Open menu",
+    "menuClose": "Close menu"
   },
   "footer": {
     "source": "Source: SITG / OCEN — IDC and FTI industrial zones, open data (class A). Base map © swisstopo. Values transformed by ThermoGeneva (see Methodology).",

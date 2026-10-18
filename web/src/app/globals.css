@@ -119,6 +119,9 @@ p { margin: 0 0 1em; }
 .lang-switch a { text-decoration: none; font-size: 0.78rem; font-weight: 600; padding: 4px 10px; border-radius: 8px; color: var(--muted); }
 .lang-switch a[aria-current="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgba(20,28,40,0.08); }
 
+/* barra e menu per telefono: nascosti su schermi grandi */
+.m-bar, .m-menu, .m-backdrop { display: none; }
+
 html[data-sidebar="collapsed"] .side-label,
 html[data-sidebar="collapsed"] .side-meta { display: none; }
 html[data-sidebar="collapsed"] .side-top { flex-direction: column; }
@@ -460,13 +463,24 @@ tr.cmp-section th { background: var(--surface-2) !important; color: var(--muted)
 @media (max-width: 900px) {
   :root, html[data-sidebar="collapsed"] { --side-w: 1fr; }
   .shell { grid-template-columns: 1fr; grid-template-rows: auto 1fr; height: auto; min-height: 100vh; padding: 8px; gap: 8px; }
-  .sidebar { margin-right: 0; border-radius: var(--radius); padding: 10px 12px; flex-direction: row; align-items: center; gap: 10px; overflow-x: auto; }
-  .side-top { margin: 0; }
-  .side-section, .side-meta, .side-toggle, .side-brand-name { display: none; }
-  .side-nav { flex-direction: row; }
-  .side-label { display: none; }
-  .side-bottom { margin: 0 0 0 auto; flex-direction: row; align-items: center; }
-  .side-small { display: none; }
+  /* telefono: solo logo, Explore, lingua e ☰; il resto della navigazione nel menu a tendina */
+  .sidebar { margin-right: 0; border-radius: var(--radius); padding: 8px 10px; position: relative; z-index: 1001; overflow: visible; }
+  .sidebar > .side-top, .sidebar > .side-section, .sidebar > .side-nav, .sidebar > .side-bottom { display: none; }
+  .m-bar { display: flex; align-items: center; gap: 10px; position: relative; z-index: 3; }
+  .m-brand { display: flex; flex: none; }
+  .m-brand .side-logo { width: 32px; height: 32px; }
+  .m-explore { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 10px; background: var(--surface); color: var(--ink); font-weight: 600; font-size: 0.9rem; text-decoration: none; box-shadow: 0 1px 2px rgba(20,28,40,0.08); }
+  .m-explore[aria-current="page"] { background: var(--ink); color: #fff; }
+  .m-lang { margin-left: auto; align-self: center; }
+  .m-burger { border: none; background: rgba(255,255,255,0.6); color: var(--ink); width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex: none; }
+  .is-menu-open .m-burger { background: var(--surface); box-shadow: 0 1px 2px rgba(20,28,40,0.08); }
+  .m-backdrop { display: block; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.28); z-index: 1; }
+  .m-menu { display: flex; flex-direction: column; gap: 2px; position: absolute; left: 0; right: 0; top: calc(100% + 6px); z-index: 2; background: var(--surface); border-radius: var(--radius); padding: 8px 10px 12px; box-shadow: 0 12px 32px rgba(15, 23, 42, 0.18); max-height: calc(100vh - 90px); overflow-y: auto; }
+  .m-menu .side-section { margin: 10px 12px 4px; }
+  .m-menu .side-item { padding: 12px; font-size: 1rem; }
+  .m-menu .side-item[aria-current="page"] { background: var(--surface-2); box-shadow: none; }
+  .m-menu-foot { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--line); margin-top: 8px; padding: 12px 12px 0; }
+  .m-menu-foot .side-item { padding: 6px 0; }
   .main { border-radius: var(--radius); }
   .container { padding: 0 22px; }
   .footer { padding: 18px 22px 26px; }
